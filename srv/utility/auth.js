@@ -16,7 +16,8 @@ module.exports = {
     // Router middleware for checking JSON web tokens.
     checkJwt: expressJwt({
         secret: process.env.JWT_SECRET,
-        userProperty: 'payload'
+        userProperty: 'payload',
+        credentialsRequired: false
     }),
 
     ///
@@ -60,7 +61,7 @@ module.exports = {
                     name: request.payload.name
                 });
             }).catch((err) => {
-                console.error(`auth.testLogin (find user) - ${err}`);
+                console.error(`auth.testLogin (find user) - ${err.stack}`);
 
                 return done({
                     status: 500,
