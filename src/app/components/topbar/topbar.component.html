@@ -1,0 +1,22 @@
+<div class="vot-topbar-container">
+  <div class="vot-topbar">
+    <a class="vot-brand vot-topbar-hoverable" href="#">
+      <img src="/assets/votany-checkmark.png" alt="Votany" />
+      <span>otany</span>
+    </a>
+    <div class="vot-menu-bars vot-topbar-hoverable" (click)="toggleMobileMenu()">
+      <i class="fa fa-bars"></i>
+    </div>
+    <div class="vot-menu {{ mobileMenuShown ? 'vot-menu-shown' : '' }}">
+      <span class="vot-menu-item">
+        <input type="text" class="vot-menu-input" placeholder="Search Polls" />
+        <button class="vot-menu-button vot-topbar-hoverable">
+          <i class="fa fa-search"></i><span> Search</span>
+        </button>
+      </span>
+      <a href="#" class="vot-menu-item vot-topbar-hoverable">Home</a>
+      <a href="#" class="vot-menu-item vot-topbar-hoverable">Create Poll</a>
+      <a href="#" class="vot-menu-item vot-topbar-hoverable">Log Out</a>
+    </div>
+  </div>
+</div>

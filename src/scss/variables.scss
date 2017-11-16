@@ -1,0 +1,14 @@
+///
+/// @file   variables.scss
+/// @brief  Contains variables that will be used by our app's sytles.
+///
+
+// Media Queries
+$md-screen: "only screen and (max-width: 800px)";
+$sm-screen: "only screen and (max-width: 640px)";
+$xs-screen: "only screen and (max-width: 480px)";
+
+// Colors
+$topbar-background:         #1B2512;
+$topbar-background-hover:   #252E1E;
+$topbar-text:               #DAE6D0;

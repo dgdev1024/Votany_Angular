@@ -1,0 +1,151 @@
+.vot-topbar-container {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    background-color: $topbar-background;
+    border: 2px solid $topbar-text;
+
+    .vot-topbar {
+        width: 85%;
+        margin: 0px auto;
+
+        @media #{$md-screen} {
+            width: 95%;
+        }
+
+        .vot-topbar-hoverable:hover {
+            background-color: $topbar-background-hover !important;
+            cursor: pointer;
+        }
+
+        .vot-brand {
+            display: block;
+            float: left;
+
+            img {
+                display: inline-block;
+                width: 33px;
+                padding: 6px 3px;
+                
+                &:after {
+                    content: "";
+                    display: block;
+                    clear: both;
+                }
+            }
+
+            span {
+                display: inline-block;
+                vertical-align: 12px;
+                font-size: 24px;
+                text-transform: uppercase;
+                letter-spacing: 6px;
+                color: $topbar-text;
+
+                @media #{$md-screen} {
+                    display: none;
+                }
+
+                &:after {
+                    content: "";
+                    display: block;
+                    clear: both;
+                }
+            }
+        }
+
+        .vot-menu {
+            float: right;
+
+            @media #{$sm-screen} {
+                display: none;
+                float: none;
+
+                &.vot-menu-shown {
+                    display: block;
+                }
+            }
+
+            .vot-menu-item {
+                display: inline-block;
+                padding: 14px 4px 13px 4px;
+                font-size: 18px;
+                text-decoration: none;
+                color: $topbar-text;
+
+                @media #{$sm-screen} {
+                    display: block;
+                    clear: both;
+                }
+
+                .vot-menu-input {
+                    display: inline-block;
+                    width: 224px;
+                    padding: 0px 4px;
+                    box-sizing: border-box;
+                    font-size: 18px;
+                    background-color: $topbar-background;
+                    color: $topbar-text;
+                    text-align: right;
+                    border: none;
+                    border-left: 2px solid $topbar-text;
+
+                    @media #{$sm-screen} {
+                        display: block;
+                        width: 100%;
+                        padding: 8px;
+                        text-align: left;
+                        border-left: none;
+                        border-bottom: 2px solid $topbar-text;
+                    }
+
+                    &:focus {
+                        outline: 0;
+                    }
+                }
+
+                .vot-menu-button {
+                    display: inline-block;
+                    padding: 0px 16px;
+                    margin-right: 8px;
+                    box-sizing: border-box;
+                    font-size: 18px;
+                    background-color: $topbar-background;
+                    color: $topbar-text;
+                    border: none;
+                    border-right: 2px solid $topbar-text;
+
+                    span {
+                        display: none;
+
+                        @media #{$sm-screen} {
+                            display: inline;
+                        }
+                    }
+
+                    @media #{$sm-screen} {
+                        display: block;
+                        width: 100%;
+                        padding: 8px;
+                        border-right: none;
+                        border-bottom: 2px solid $topbar-text;
+                    }
+                }
+            }
+        }
+
+        .vot-menu-bars {
+            display: none;
+
+            @media #{$sm-screen} {
+                display: block;
+                float: right;
+                padding: 14px 14px 13px 14px;
+                font-size: 18px;
+                text-decoration: none;
+                color: $topbar-text;
+            }
+        }
+    }
+}

@@ -1,1 +1,17 @@
 /* You can add global styles to this file, and also import other style files */
+
+// Google Fonts
+@import url('https://fonts.googleapis.com/css?family=Questrial');
+
+// Variables
+@import "./scss/variables.scss";
+
+// Topbar
+@import "./scss/topbar.scss";
+
+// Reset margin and padding of all components. Also set the font.
+* {
+    margin: 0px;
+    padding: 0px;
+    font-family: "Questrial", sans-serif;
+}
