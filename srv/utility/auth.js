@@ -104,7 +104,7 @@ module.exports = {
         twitter: new passportTwitter.Strategy({
             consumerKey: process.env.TWITTER_CONSUMER_KEY,
             consumerSecret: process.env.TWITTER_CONSUMER_SECRET,
-            callbackURL: `${process.env.SITE_URL}/api/auth/login/twitter/callback`
+            callbackURL: `${process.env.SITE_URL}/api/user/login/twitter/callback`
         }, (accessToken, refreshToken, profile, done) => {
             // Fetch the provider ID and display name.
             const { id, displayName } = profile;
@@ -149,7 +149,7 @@ module.exports = {
         facebook: new passportFacebook.Strategy({
             clientID: process.env.FACEBOOK_APP_ID,
             clientSecret: process.env.FACEBOOK_APP_SECRET,
-            callbackURL: `${process.env.SITE_URL}/api/auth/login/facebook/callback`
+            callbackURL: `${process.env.SITE_URL}/api/user/login/facebook/callback`
         }, (accessToken, refreshToken, profile, done) => {
             // Fetch the provider ID and display name.
             const { id, displayName } = profile;

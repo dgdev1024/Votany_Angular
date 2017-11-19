@@ -6,12 +6,35 @@
 // Variables
 @import "./scss/variables.scss";
 
-// Topbar
+// Mixins
+@import "./scss/mixins.scss";
+
+// Topbar and Flash
 @import "./scss/topbar.scss";
+@import "./scss/flash.scss";
 
 // Reset margin and padding of all components. Also set the font.
 * {
     margin: 0px;
     padding: 0px;
     font-family: "Questrial", sans-serif;
+}
+
+html, body {
+    height: 100%;
+    min-height: 100%;
+    background: -webkit-linear-gradient(to bottom, $page-background-start, $page-background-end 75%);
+    background: -moz-linear-gradient(to bottom, $page-background-start, $page-background-end 75%);
+    background: -o-linear-gradient(to bottom, $page-background-start, $page-background-end 75%);
+    background: -ms-linear-gradient(to bottom, $page-background-start, $page-background-end 75%);
+    background: linear-gradient(to bottom, $page-background-start, $page-background-end 75%);
+}
+
+// Application body.
+.vot-body {
+    margin-top: 50px;
+    overflow: auto;
+
+    @import "./scss/home.scss";
+    @import "./scss/form.scss";
 }

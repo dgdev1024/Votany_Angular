@@ -1,5 +1,8 @@
 import { Component } from '@angular/core';
-import { TopbarComponent} from './components/topbar/topbar.component';
+import { RouterOutlet } from '@angular/router';
+import { TopbarComponent } from './components/topbar/topbar.component';
+import { FlashComponent } from './components/flash/flash.component';
+
 
 @Component({
   selector: 'app-root',
@@ -7,5 +10,6 @@ import { TopbarComponent} from './components/topbar/topbar.component';
   styles: []
 })
 export class AppComponent {
-  title = 'app';
+  constructor () {
+  }
 }

@@ -42,7 +42,7 @@ module.exports = () => {
     const io = socketIo(server);
 
     // API Routing
-    app.use('/api/auth', require('./routes/auth')(io));
+    app.use('/api/user', require('./routes/auth')(io));
     app.use('/api/poll', require('./routes/poll')(io));
 
     // Index Routing

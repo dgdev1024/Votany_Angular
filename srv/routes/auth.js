@@ -50,6 +50,7 @@ module.exports = (io) => {
         });
     });
 
+
     // POST: Authenticate Password Token
     router.post('/authenticatePasswordToken/:authenticateId', (req, res) => {
         tokenController.authenticateToken(req.params.authenticateId, req.body.authenticateCode, (err, ok) => {
@@ -134,6 +135,14 @@ module.exports = (io) => {
 
             return res.redirect(`/finishlogin?jwt=${token}`);
         })(req, res);
+    });
+
+    // GET: Fetches a user profile.
+    router.get('/profile/:userId', (req, res) => {
+        userController.fetchUserProfile(req.params.userId, (err, ok) => {
+            if (err) { return res.status(err.status).json({ error: err }); }
+            return res.status(200).json(ok);
+        });
     });
 
     // Return Router

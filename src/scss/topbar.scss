@@ -4,7 +4,8 @@
     left: 0px;
     width: 100%;
     background-color: $topbar-background;
-    border: 2px solid $topbar-text;
+    border-bottom: 2px solid $topbar-text;
+    z-index: 100;
 
     .vot-topbar {
         width: 85%;
@@ -81,7 +82,7 @@
 
                 .vot-menu-input {
                     display: inline-block;
-                    width: 224px;
+                    width: 160px;
                     padding: 0px 4px;
                     box-sizing: border-box;
                     font-size: 18px;

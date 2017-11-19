@@ -1,0 +1,54 @@
+<div class="vot-form">
+    <span class="vot-form-heading">Sign In</span>
+    <span class="vot-form-notice">
+      Note: By signing in, you agree to be bound to the Terms and Conditions.
+    </span>
+    <div class="vot-form-element">
+      <button class="twitter" (click)="socialService.socialSignin($event, 'twitter')">
+        <i class="fa fa-twitter"></i> Sign In with Twitter
+      </button>
+    </div>
+    <div class="vot-form-element" (click)="socialService.socialSignin($event, 'facebook')">
+      <button class="facebook">
+        <i class="fa fa-facebook"></i> Sign In with Facebook
+      </button>
+    </div>
+    <span class="vot-form-heading">Or...</span>
+    <div *ngIf="error !== ''" class="vot-form-error">
+      <p>{{ error }}</p>
+      <ul *ngIf="errorDetails.length > 0">
+        <li *ngFor="let detail of errorDetails">{{ detail }}</li>
+      </ul>
+    </div>
+    <form (submit)="onSubmitClicked($event)">
+      <div class="vot-form-element">
+        <label for="emailAddress">Email Address:</label>
+        <input type="text"
+               id="emailaddress"
+               name="emailAddress"
+               [(ngModel)]="emailAddress"
+               required />
+      </div>
+      <div class="vot-form-element">
+        <label for="password">Password:</label>
+        <input type="password"
+               id="password"
+               name="password"
+               [(ngModel)]="password"
+               required />
+      </div>
+      <div class="vot-form-element">
+        <button [disabled]="working" type="submit" class="confirm">
+          Log In
+        </button>
+      </div>
+    </form>
+    <ul class="vot-form-information">
+      <li>
+        <strong>Don't have an account?</strong> It's easy to sign up, locally or via social media!
+      </li>
+      <li>
+        <strong>Forgot your password?</strong> <a routerLink="/user/issuePasswordToken">Click here</a> to reset your password.
+      </li>
+    </ul>
+  </div>

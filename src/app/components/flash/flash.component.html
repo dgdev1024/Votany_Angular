@@ -1,0 +1,11 @@
+<div *ngIf="flashService.message !== ''" class="vot-flash {{ flashService.getTypeClass() }}">
+  <div class="vot-flash-close" (click)="flashService.clear()">
+      <i class="fa fa-times"></i>
+  </div>
+  <p>{{ flashService.message }}</p>
+  <ul *ngIf="flashService.details.length > 0">
+      <li *ngFor="let detail of flashService.details">
+          {{ detail }}
+      </li>
+  </ul>
+</div>

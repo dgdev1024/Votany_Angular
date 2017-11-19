@@ -1,0 +1,80 @@
+<div class="vot-form">
+  <span class="vot-form-heading">Register a New Account</span>
+  <span class="vot-form-notice">Please read the instructions below before registering.</span>
+  <div class="vot-form-element">
+    <button class="twitter" (click)="socialService.socialSignin($event, 'twitter')">
+      <i class="fa fa-twitter"></i> Sign In with Twitter
+    </button>
+  </div>
+  <div class="vot-form-element" (click)="socialService.socialSignin($event, 'facebook')">
+    <button class="facebook">
+      <i class="fa fa-facebook"></i> Sign In with Facebook
+    </button>
+  </div>
+  <span class="vot-form-heading">Or...</span>
+  <div *ngIf="error !== ''" class="vot-form-error">
+    <p>{{ error }}</p>
+    <ul *ngIf="errorDetails.length > 0">
+      <li *ngFor="let detail of errorDetails">{{ detail }}</li>
+    </ul>
+  </div>
+  <form (submit)="onSubmitClicked($event)">
+    <div class="vot-form-element">
+      <label for="firstName">First Name:</label>
+      <input type="text"
+             id="firstName"
+             name="firstName"
+             [(ngModel)]="firstName"
+             required />
+    </div>
+    <div class="vot-form-element">
+      <label for="lastName">Last Name:</label>
+      <input type="text"
+             id="lastName"
+             name="lastName"
+             [(ngModel)]="lastName"
+             required />
+    </div>
+    <div class="vot-form-element">
+      <label for="emailAddress">Email Address:</label>
+      <input type="text"
+             id="emailaddress"
+             name="emailAddress"
+             [(ngModel)]="emailAddress"
+             required />
+    </div>
+    <div class="vot-form-element">
+      <label for="password">Password:</label>
+      <input type="password"
+             id="password"
+             name="password"
+             [(ngModel)]="password"
+             required />
+    </div>
+    <div class="vot-form-element">
+      <label for="confirm">Confirm Password:</label>
+      <input type="password"
+              id="confirm"
+              name="confirmedPassword"
+              [(ngModel)]="confirmedPassword"
+              required />
+    </div>
+    <div class="vot-form-element">
+      <button [disabled]="working" type="submit" class="confirm">
+        Create Account
+      </button>
+    </div>
+  </form>
+  <span class="vot-form-heading">Instructions</span>
+  <ul class="vot-form-information">
+    <li>For local registration, all fields are required.</li>
+    <li>First and last names should contain only letters.</li>
+    <li>Email addresses must be in the form 'example@test.com'.</li>
+    <li>Passwords must contain between 8 and 30 characters.</li>
+    <li>Passwords must contain at least one capital letter.</li>
+    <li>Passwords must contain at least one number.</li>
+    <li>Passwords must contain at least one symbol.</li>
+    <li>If you need help creating a strong password, <a href="https://passwordsgenerator.net/" target="_blank">this website will help.</a></li>
+    <li>By registering locally or logging in via social media, you agree to be bound to the Terms of Use policy.</li>
+  </ul>
+</div>

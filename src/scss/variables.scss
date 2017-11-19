@@ -4,11 +4,28 @@
 ///
 
 // Media Queries
-$md-screen: "only screen and (max-width: 800px)";
-$sm-screen: "only screen and (max-width: 640px)";
-$xs-screen: "only screen and (max-width: 480px)";
+$md-screen: "only screen and (max-width: 833px)";
+$sm-screen: "only screen and (max-width: 650px)";
+$xs-screen: "only screen and (max-width: 500px)";
 
 // Colors
+$flash-default-bg: lightgrey;
+$flash-default-text: black;
+$flash-ok-bg: lightgreen;
+$flash-ok-text: darkgreen;
+$flash-error-bg: lightpink;
+$flash-error-text: darkred;
+
 $topbar-background:         #1B2512;
 $topbar-background-hover:   #252E1E;
 $topbar-text:               #DAE6D0;
+
+$page-background-end:     #052A03;
+$page-background-start:       rgb(11, 87, 6);
+
+$form-background:           #C6C7C6;
+$form-text:                 black;
+
+$home-background:           #052A03;
+$home-background-darker:    rgb(2, 14, 1);
+$home-text:                 #E8E9E8;

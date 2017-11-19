@@ -101,15 +101,16 @@ module.exports = {
                         });
                     }
 
-                    return next(null);
+                    return next(null, token.authenticateId);
                 });
             }
         ];
 
-        waterfall(functions, (err) => {
+        waterfall(functions, (err, id) => {
             if (err) { return done(err); }
             return done(null, {
-                message: 'Check your inbox for the password token\'s authentication code.'
+                message: 'Check your inbox for the password token\'s authentication code.',
+                authenticateId: id
             });
         });
     },

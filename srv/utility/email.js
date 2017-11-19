@@ -36,12 +36,12 @@ const senderString = `${process.env.SITE_AUTHOR} <${process.env.EMAIL_ADDRESS}>`
 ///
 module.exports.localUserVerification = (details, done) => {
     // The link the user will need to click in order to verify their account.
-    const url = `${process.env.SITE_URL}/api/auth/verify/${details.verifyUrl}`;
+    const url = `${process.env.SITE_URL}/user/verify/${details.verifyUrl}`;
 
     // The email's HTML body.
     const body = `
-        <div>
-            <h1 style="margin: 0px; padding: 8px; width: 100%; color: white; background-color: blue;">
+        <div style="#C6C7C6">
+            <h1 style="margin: 0px; padding: 8px; width: 100%; color: white; background-color: #052A03;">
                 Hello, ${details.displayName}!
             </h1>
             <p style="padding-top: 16px;">
@@ -77,12 +77,12 @@ module.exports.localUserVerification = (details, done) => {
 ///
 module.exports.passwordTokenIssued = (details, done) => {
     // The link the user will need to click in order to reach the authentication page.
-    const url = `${process.env.SITE_URL}/user/authenticatePasswordReset/${details.authenticateId}`;
+    const url = `${process.env.SITE_URL}/user/authenticatePasswordToken/${details.authenticateId}`;
 
     // The email's HTML body.
     const body = `
-        <div>
-            <h1 style="margin: 0px; padding: 8px; width: 100%; color: white; background-color: blue;">
+        <div style="#C6C7C6">
+            <h1 style="margin: 0px; padding: 8px; width: 100%; color: white; background-color: #052A03;">
                 Hello, ${details.displayName}!
             </h1>
             <p style="padding-top: 16px;">
@@ -127,8 +127,8 @@ module.exports.passwordTokenIssued = (details, done) => {
 module.exports.passwordChanged = (details, done) => {
     // The email's HTML body.
     const body = `
-        <div>
-            <h1 style="margin: 0px; padding: 8px; width: 100%; color: white; background-color: blue;">
+        <div style="#C6C7C6">
+            <h1 style="margin: 0px; padding: 8px; width: 100%; color: white; background-color: #052A03;">
                 Hello, ${details.displayName}!
             </h1>
             <p style="padding-top: 16px;">

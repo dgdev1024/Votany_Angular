@@ -58,6 +58,11 @@ module.exports = {
             return 'The passwords do not match.'; 
         }
 
+        // Make sure the password has between 8 and 30 characters in length.
+        else if (pass < 8 || pass > 30) {
+            return 'Passwords must have between 8 and 30 characters.';
+        }
+
         // Make sure the password contains at least one capital letter, one number,
         // and symbol.
         else if (!regex.capitals.test(pass) || !regex.numbers.test(pass) || !regex.symbols.test(pass)) {
