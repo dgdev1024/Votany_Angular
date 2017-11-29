@@ -78,7 +78,10 @@ const pollSchema = new mongoose.Schema({
     searchKeywords: { type: String, required: true },
 
     // The last time the poll was interacted with.
-    lastInteractionDate: { type: Date, default: Date.now }
+    lastInteractionDate: { type: Date, default: Date.now },
+
+    // How many times has this poll been edited?
+    editCount: { type: Number, default: 0 }
 });
 
 // Index our poll issue and search keywords for easier searching.
@@ -102,6 +105,16 @@ pollSchema.virtual('heat').get(function () {
     return this.choices.reduce((total, choice) => {
         return total + choice.voters.length;
     }, 0) + this.comments.length;
+});
+
+// Has the poll been edited at all?
+pollSchema.virtual('edited').get(function () {
+    return this.editCount > 0;
+});
+
+// Is the poll closed?
+pollSchema.virtual('closed').get(function () {
+    return this.pollWillClose && Date.now() >= this.closeDate.getTime();
 });
 
 // Checks to see if the user with the given ID (or the IP address given,
@@ -160,7 +173,7 @@ pollSchema.methods.addChoice = function (userId, choiceBody) {
         this.choices.push({ body: choiceBody, voters: [] });
     } else {
         // Check to see if the poll is closed.
-        if (this.pollWillClose && Date.now() >= this.closeDate().getTime()) {
+        if (this.pollWillClose && Date.now() >= this.closeDate.getTime()) {
             return 'This poll is closed.';
         }
     
@@ -172,6 +185,7 @@ pollSchema.methods.addChoice = function (userId, choiceBody) {
         // Add the choice to the poll and cast the vote on that choice.
         this.choices.push({ body: choiceBody, voters: [ userId ] });
         this.lastInteractionDate = new Date();
+        this.editCount++;
     }
 
     return '';
@@ -181,7 +195,7 @@ pollSchema.methods.addChoice = function (userId, choiceBody) {
 pollSchema.methods.editComment = function (userId, commentId, body) {
     for (let comment of this.comments) {
         if (comment._id.toString() === commentId) {
-            if (comment.authorId.toString() !== userId) {
+            if (comment.authorId.toString() !== userId && this.authorId.toString !== userId) {
                 return 'You are not the author of this comment.';
             }
 
@@ -198,7 +212,7 @@ pollSchema.methods.editComment = function (userId, commentId, body) {
 pollSchema.methods.removeComment = function (userId, commentId) {
     for (let i = 0; i < this.comments.length; ++i) {
         if (this.comments[i]._id.toString() === commentId) {
-            if (this.comments[i].authorId.toString() !== userId) {
+            if (this.comments[i].authorId.toString() !== userId && this.authorId.toString !== userId) {
                 return 'You are not the author of this comment.';
             }
 

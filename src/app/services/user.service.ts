@@ -47,6 +47,10 @@ export class UserService {
     });
   }
 
+  passwordTokenExists (id: string) {
+    return this.httpService.get(`/api/user/passwordTokenExists/${id}`);
+  }
+
   fetchUserProfile (userId: string) {
     return this.httpService.get(`/api/user/profile/${userId}`);
   }

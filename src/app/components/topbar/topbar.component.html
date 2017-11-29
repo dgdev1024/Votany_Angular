@@ -1,6 +1,6 @@
 <div class="vot-topbar-container" (mouseleave)="resetMobileMenu()">
   <div class="vot-topbar">
-    <a class="vot-brand vot-topbar-hoverable" href="#">
+    <a class="vot-brand vot-topbar-hoverable" routerLink="/">
       <img src="/assets/votany-checkmark.png" alt="Votany" />
       <span>otany</span>
     </a>
@@ -9,20 +9,22 @@
     </div>
     <div class="vot-menu {{ mobileMenuShown ? 'vot-menu-shown' : '' }}">
       <span class="vot-menu-item">
-        <input type="text" class="vot-menu-input" placeholder="Search Polls" />
-        <button class="vot-menu-button vot-topbar-hoverable">
-          <i class="fa fa-search"></i><span> Search</span>
-        </button>
+        <form (submit)="onSearchSubmit($event)">
+          <input type="text" class="vot-menu-input" name="searchQuery" [(ngModel)]="searchQuery" placeholder="Search Polls" />
+          <button type="submit" class="vot-menu-button vot-topbar-hoverable">
+            <i class="fa fa-search"></i><span> Search</span>
+          </button>
+        </form>
       </span>
       <span *ngIf="tokenService.check() === true; else votNotLoggedIn">
-        <a href="#" class="vot-menu-item vot-topbar-hoverable" (click)="resetMobileMenu()">Dashboard</a>
+        <a routerLink="/" class="vot-menu-item vot-topbar-hoverable" (click)="resetMobileMenu()">Dashboard</a>
         <a href="#" class="vot-menu-item vot-topbar-hoverable" (click)="resetMobileMenu()">Profile</a>
-        <a href="#" class="vot-menu-item vot-topbar-hoverable" (click)="resetMobileMenu()">My Polls</a>
+        <a routerLink="/poll/editor" class="vot-menu-item vot-topbar-hoverable" (click)="resetMobileMenu()">Create Poll</a>
         <a routerLink="/user/logout" class="vot-menu-item vot-topbar-hoverable" (click)="resetMobileMenu()">Log Out</a>
       </span>
       <ng-template #votNotLoggedIn>
-        <a href="#" class="vot-menu-item vot-topbar-hoverable" (click)="resetMobileMenu()">Home</a>
-        <a href="#" class="vot-menu-item vot-topbar-hoverable" (click)="resetMobileMenu()">Recent Polls</a>
+        <a routerLink="/" class="vot-menu-item vot-topbar-hoverable" (click)="resetMobileMenu()">Home</a>
+        <a routerLink="/poll/search" queryParams="{ method: 'recent' }" class="vot-menu-item vot-topbar-hoverable" (click)="resetMobileMenu()">Recent Polls</a>
         <a routerLink="/user/login" class="vot-menu-item vot-topbar-hoverable" (click)="resetMobileMenu()">Log In</a>
         <a routerLink="/user/register" class="vot-menu-item vot-topbar-hoverable" (click)="resetMobileMenu()">Sign Up</a>
       </ng-template>

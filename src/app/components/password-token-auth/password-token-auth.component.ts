@@ -1,4 +1,5 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 import { Router, ActivatedRoute } from '@angular/router';
 import { UserService } from '../../services/user.service';
 import { FlashService, FlashType } from '../../services/flash.service';
@@ -18,6 +19,7 @@ export class PasswordTokenAuthComponent implements OnInit {
   private m_errorDetails: string[] = [];
 
   constructor(
+    private titleService: Title,
     private routerService: Router,
     private activatedRoute: ActivatedRoute,
     private userService: UserService,
@@ -25,8 +27,32 @@ export class PasswordTokenAuthComponent implements OnInit {
   ) { }
 
   ngOnInit() {
+    this.titleService.setTitle('Authenticate a Password Reset - Votany');
     this.activatedRoute.params.subscribe((params) => {
       this.m_authId = params['authId'];
+      this.userService.passwordTokenExists(this.m_authId).subscribe(
+        (response) => {
+          if (response['found'] === true) {
+            if (response['spent'] === true) {
+              this.flashService.deploy('The password token given is already spent.', [], FlashType.Error);
+              this.routerService.navigate([ '/' ], { replaceUrl: true });
+            }
+            else if (response['authenticated'] === true) {
+              this.flashService.deploy('This password token has already been authenticated.', [], FlashType.Error);
+              this.routerService.navigate([ '/' ], { replaceUrl: true });
+            }
+          } else {
+            this.flashService.deploy('A password token with the given ID was not found.', [], FlashType.Error);
+            this.routerService.navigate([ '/' ], { replaceUrl: true });
+          }
+        },
+
+        (error) => {
+          const { message } = error.error['error'];
+          this.flashService.deploy(message, [], FlashType.Error);
+          this.routerService.navigate([ '/' ], { replaceUrl: true });
+        }
+      );
     });
   }
 

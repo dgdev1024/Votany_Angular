@@ -1,0 +1,83 @@
+<div class="vot-poll-form">
+  <div class="vot-poll-form-col left">
+    <div *ngIf="pollError !== ''" class="vot-poll-form-card">
+      <span class="label center error">{{ pollError }}</span>
+      <ul *ngIf="pollErrorDetails.length > 0" class="center error">
+        <li *ngFor="let detail of pollErrorDetails">{{ detail }}</li>
+      </ul>
+    </div>
+    <div class="vot-poll-form-card">
+      <span class="heading">The Issue to be Voted On</span>
+      <span class="label center">
+        Type in your issue here so that voters will know what they are voting on.
+      </span>
+      <textarea name="issue" [(ngModel)]="issue" placeholder="Enter the Poll's Issue." maxlength="280"></textarea>
+      <span class="label center">
+        {{ issue.length }} / 280
+      </span>
+    </div>
+    <div *ngIf="editingPoll === false" class="vot-poll-form-card">
+      <span class="heading">The Choices to be Voted For</span>
+      <span *ngIf="choiceError !== ''" class="label center error">
+        {{ choiceError }}
+      </span>
+      <span *ngIf="choices.length < 2" class="label center">
+        Minimum 2 Choices
+      </span>
+      <ul *ngIf="choices.length > 0">
+        <li *ngFor="let choice of choices; let i = index">
+          <span *ngIf="choiceEditIndex !== i; else votEditingChoice">
+            <button class="primary" (click)="setChoiceEditIndex($event, i)"><i class="fa fa-pencil"></i></button>
+            <button class="danger" (click)="removeChoice($event, i)"><i class="fa fa-trash"></i></button>
+            <span>{{ choice }}</span>
+          </span>
+          <ng-template #votEditingChoice>
+            <form (submit)="finishEditingChoice($event, true)">
+              <button class="confirm" type="submit"><i class="fa fa-save"></i></button>
+              <button class="danger" (click)="finishEditingChoice($event, false)"><i class="fa fa-times"></i></button>
+              <input type="text" class="fill" name="choiceEditInput" [(ngModel)]="choiceEditInput" maxlength="140" />
+              <span class="label inline">{{ choiceEditInput.length }} / 140</span>
+            </form>
+          </ng-template>
+        </li>
+      </ul>
+      <form (submit)="addChoice($event)">
+        <input type="text" class="block" name="choiceInput" [(ngModel)]="choiceInput" maxlength="140" />
+        <span class="label center">{{ choiceInput.length }} / 140</span>
+        <button type="submit" class="confirm block"><i class="fa fa-plus"></i> Add Choice</button>
+      </form>
+    </div>
+  </div>
+  <div class="vot-poll-form-col right">
+    <div class="vot-poll-form-card">
+      <span class="heading">The Poll Options</span>
+      <span class="label">
+        <input type="checkbox" id="requiresLogin" name="requiresLogin" [(ngModel)]="requiresLogin" /> 
+        <label for="requiresLogin">Users must be logged in to vote.</label>
+      </span>
+      <span class="label">
+        <input type="checkbox" id="canAddExtraChoices" name="canAddExtraChoices" [(ngModel)]="canAddExtraChoices" /> 
+        <label for="canAddExtraChoices">Logged-in users can add extra choices.</label>
+      </span>
+      <span class="label">
+        <input type="checkbox" id="pollWillClose" name="pollWillClose" [(ngModel)]="pollWillClose" /> 
+        <label for="pollWillClose">This poll will close{{ pollWillClose ? ' on...' : '.' }}</label>
+      </span>
+      <span class="label {{ pollWillClose ? '' : 'hidden' }}">
+        <app-datetime #votCloseDate></app-datetime>
+      </span>
+    </div>
+    <div class="vot-poll-form-card">
+      <span class="heading">Finding Your Poll</span>
+      <span class="label center">Enter some keywords to help others find your poll.</span>
+      <input type="text" class="block" name="keywords" [(ngModel)]="keywords" placeholder="Enter some keywords." />
+    </div>
+    <div class="vot-poll-form-card">
+      <button class="confirm block" (click)="submitPoll($event)">
+        <i class="fa fa-check"></i> {{ editingPoll ? 'Finish Editing' : 'Submit Poll' }}
+      </button>
+      <button class="primary block {{ editingPoll ? 'hidden' : '' }}" (click)="savePollDraft()"><i class="fa fa-save"></i> Save Poll</button>
+      <button class="danger block {{ editingPoll ? '' : 'hidden' }}" (click)="cancelEditing($event)"><i class="fa fa-times"></i> Cancel Editing</button>
+    </div>
+  </div>
+</div>

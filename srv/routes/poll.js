@@ -93,7 +93,19 @@ module.exports = (socket) => {
                 if (err) { return res.status(err.status).json({ error: err }); }
                 return res.status(200).json(ok);
             }
-        )
+        );
+    });
+
+    // GET: Searches for polls posted by a given user.
+    router.get('/by/:userId', (req, res) => {
+        pollController.fetchPollsByUser(
+            req.params.userId,
+            parseInt(req.query.page) || 0,
+            (err, ok) => {
+                if (err) { return res.status(err.status).json({ error: err }); }
+                return res.status(200).json(ok);
+            }
+        );
     });
 
     // GET: Searches for the hottest polls right now.
@@ -168,6 +180,7 @@ module.exports = (socket) => {
                 userId: user.id,
                 pollId: req.params.pollId,
                 issue: req.body.issue,
+                keywords: req.body.keywords,
                 requiresLogin: req.body.requiresLogin,
                 canAddExtraChoices: req.body.canAddExtraChoices,
                 pollWillClose: req.body.pollWillClose,
@@ -196,7 +209,7 @@ module.exports = (socket) => {
     });
 
     // DELETE: Removes a comment from a poll.
-    router.delete('/removeComment/:pollId', authentication.checkJwt, (req, res) => {
+    router.put('/removeComment/:pollId', authentication.checkJwt, (req, res) => {
         authentication.testLogin(req, (err, user) => {
             if (err) { return res.status(err.status).json({ error: err }); }
             pollController.removeComment({

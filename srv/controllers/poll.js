@@ -31,8 +31,13 @@ module.exports = {
                     // Track validation errors.
                     let errors = [];
 
+                    // Check to see if the user entered an issue.
+                    if (!details.issue) {
+                        errors.push('Please enter an issue.');
+                    }
+
                     // The poll issue must contain 280 characters or fewer.
-                    if (details.issue.length > 280) {
+                    else if (details.issue.length > 280) {
                         errors.push('The poll issue must contain 280 characters or fewer.');
                     }
 
@@ -51,7 +56,8 @@ module.exports = {
 
                     // If the poll is set to close, make sure the close date is actually a point in
                     // the future.
-                    if (details.pollWillClose && Date.now() >= details.closeDate.getTime()) {
+                    const closeDate = details.pollWillClose ? new Date(details.closeDate) : new Date();
+                    if (details.pollWillClose && Date.now() >= closeDate.getTime()) {
                         errors.push('The poll\'s close date needs to be a point in the future.');
                     }
 
@@ -70,11 +76,11 @@ module.exports = {
                     }
 
                     // Next function.
-                    return next(null);
+                    return next(null, closeDate);
                 },
 
                 // Create and save the poll.
-                (next) => {
+                (closeDate, next) => {
                     // Create and populate the poll object.
                     let p = new pollModel();
                     p.authorId = details.userId;
@@ -83,7 +89,7 @@ module.exports = {
                     p.requiresLogin = details.requiresLogin;
                     p.canAddExtraChoices = details.canAddExtraChoices;
                     p.pollWillClose = details.pollWillClose;
-                    p.closeDate = (details.pollWillClose ? details.closeDate : null);
+                    p.closeDate = (details.pollWillClose ? closeDate : null);
                     p.searchKeywords = details.keywords;
 
                     // Save the poll to the database.
@@ -99,17 +105,18 @@ module.exports = {
                         });
 
                         // Done.
-                        return next(null);
+                        return next(null, poll._id.toString());
                     }).catch((err) => {
                         console.error(`pollController.createPoll (save poll) - ${err.stack}`);
                         return next({ status: 500, message: 'Something went wrong while creating your poll. Try again later.' });
                     });
                 }
             ],
-            (err) => {
+            (err, id) => {
                 if (err) { return done(err); }
                 return done(null, {
-                    message: 'Your poll has been posted!'
+                    message: 'Your poll has been posted!',
+                    pollId: id
                 });
             }
         );
@@ -130,6 +137,19 @@ module.exports = {
         // Drip, drip, drip...
         waterfall(
             [
+                // Validate the comment.
+                (next) => {
+                    if (!details.body) {
+                        return next({ status: 400, message: 'Please enter a comment.' });
+                    }
+
+                    if (details.body.length > 280) {
+                        return next({ status: 400, message: 'Your comment contains too many characters.' });
+                    }
+
+                    return next(null);
+                },
+
                 // Check to see if a poll with the given ID exists.
                 (next) => {
                     pollModel.findById(details.pollId).then((poll) => {
@@ -163,8 +183,10 @@ module.exports = {
                         socket.emit('post comment', {
                             pollId: details.pollId,
                             authorId: details.userId,
-                            authorName: details.authorName,
-                            body: details.body
+                            commentId: poll.comments[poll.comments.length - 1]._id.toString(),
+                            authorName: details.userName,
+                            body: details.body,
+                            postDate: new Date(poll.lastInteractionDate)
                         });
 
                         // Done.
@@ -198,18 +220,25 @@ module.exports = {
                 return done({ status: 404, message: 'A poll with this ID was not found.' });
             }
 
+            const choiceVotedFor = poll.votedFor(voterId);
+
             return done(null, {
                 authorId: poll.authorId._id,
                 authorName: poll.authorId.name,
                 postDate: poll.postDate,
                 issue: poll.issue,
                 choices: poll.choices.map((choice) => { return { choiceId: choice._id, body: choice.body, votes: choice.voters.length }; }),
-                choiceVotedFor: poll.votedFor(voterId),
+                choiceVotedFor,
                 requiresLogin: poll.requiresLogin,
                 canAddExtraChoices: poll.canAddExtraChoices,
                 pollWillClose: poll.pollWillClose,
                 closeDate: poll.pollWillClose ? poll.closeDate : null,
-                searchKeywords: poll.searchKeywords
+                closed: poll.closed,
+                searchKeywords: poll.searchKeywords,
+                edited: poll.edited,
+                editCount: poll.editCount,
+                isAuthor: poll.authorId._id.toString() === voterId,
+                hasVoted: choiceVotedFor !== null
             });
         }).catch((err) => {
             console.error(`pollController.fetchPoll (fetch poll) - ${err.stack}`);
@@ -232,7 +261,7 @@ module.exports = {
             }
 
             if (poll.comments.length === 0) {
-                return done({ status: 404, message: 'This poll has no comments yet.' });
+                return done(null, { comments: [], lastPage: true });
             }
 
             // Populate the author IDs of the poll's comments with the authors' details.
@@ -246,6 +275,7 @@ module.exports = {
                     return b.postDate.getTime() - a.postDate.getTime();
                 }).slice(start, end).map((comment) => {
                     return {
+                        commentId: comment._id.toString(),
                         authorId: comment.authorId._id,
                         authorName: comment.authorId.name,
                         postDate: comment.postDate,
@@ -301,12 +331,15 @@ module.exports = {
                 return done(null, {
                     polls: polls.slice(0, 20).map(poll => {
                         return {
+                            pollId: poll._id.toString(),
                             issue: poll.issue,
                             authorId: poll.authorId._id,
                             authorName: poll.authorId.name,
                             postDate: poll.postDate,
                             voteCount: poll.voteCount,
-                            commentCount: poll.commentCount
+                            commentCount: poll.commentCount,
+                            editCount: poll.editCount,
+                            closed: poll.closed,
                         };
                     }),
                     lastPage: polls.length < 21
@@ -314,6 +347,49 @@ module.exports = {
             })
             .catch((err) => {
                 console.log(`pollController.searchForPolls (search polls) - ${err.stack}`);
+                return done({ status: 500, message: 'Something went wrong while searching for polls. Try again later.' });
+            });
+    },
+
+    ///
+    /// @fn     fetchPollsByUser
+    /// @brief  Fetches all polls posted by a user with the given ID.
+    ///
+    /// @param  {string}    userId The user ID to search by.
+    /// @param  {number}    page The page of polls.
+    /// @param  {function}  done Run when finished.
+    ///
+    fetchPollsByUser (userId, page, done) {
+        pollModel.find({ authorId: userId })
+            .populate('authorId')
+            .sort('-postDate')
+            .limit(21)
+            .skip(20 * page)
+            .exec()
+            .then((polls) => {
+                if (polls.length === 0) {
+                    return done({ status: 404, message: 'This user has not posted any polls.' });
+                }
+                
+                return done(null, {
+                    polls: polls.slice(0, 20).map(poll => {
+                        return {
+                            pollId: poll._id.toString(),
+                            issue: poll.issue,
+                            authorId: poll.authorId._id,
+                            authorName: poll.authorId.name,
+                            postDate: poll.postDate,
+                            voteCount: poll.voteCount,
+                            commentCount: poll.commentCount,
+                            editCount: poll.editCount,
+                            closed: poll.closed,
+                        };
+                    }),
+                    lastPage: polls.length < 21
+                });
+            })
+            .catch((err) => {
+                console.error(`pollController.fetchPollsByUser (find polls) - ${err.stack}`);
                 return done({ status: 500, message: 'Something went wrong while searching for polls. Try again later.' });
             });
     },
@@ -346,12 +422,15 @@ module.exports = {
             // the number of times a poll is voted on and commented on.
             const hot = polls.sort((a, b) => b.heat - a.heat).slice(start, end).map((poll) => {
                 return {
+                    pollId: poll._id.toString(),
                     issue: poll.issue,
                     authorId: poll.authorId._id,
                     authorName: poll.authorId.name,
                     postDate: poll.postDate,
                     voteCount: poll.voteCount,
-                    commentCount: poll.commentCount
+                    commentCount: poll.commentCount,
+                    editCount: poll.editCount,
+                    closed: poll.closed,
                 };
             });
 
@@ -391,12 +470,15 @@ module.exports = {
 
                 const sliced = polls.slice(0, 20).map((poll) => {
                     return {
+                        pollId: poll._id.toString(),
                         issue: poll.issue,
                         authorId: poll.authorId._id,
                         authorName: poll.authorId.name,
                         postDate: poll.postDate,
                         voteCount: poll.voteCount,
-                        commentCount: poll.commentCount
+                        commentCount: poll.commentCount,
+                        editCount: poll.editCount,
+                        closed: poll.closed,
                     };
                 });
 
@@ -498,6 +580,19 @@ module.exports = {
         // Drippity Drippity Drippitah!
         waterfall(
             [
+                // Validate the newly entered choice.
+                (next) => {
+                    if (!details.body) {
+                        return next({ status: 400, message: 'Please enter a choice to write in.' });
+                    }
+
+                    if (details.body.length > 140) {
+                        return next({ status: 400, message: 'Your write-in choice contains more than 140 characters.' });
+                    }
+
+                    return next(null);
+                },
+
                 // Find the poll in our database.
                 (next) => {
                     pollModel.findById(details.pollId).then((poll) => {
@@ -526,26 +621,29 @@ module.exports = {
                     }
 
                     // Update the poll.
-                    poll.save().then(() => {
+                    poll.save().then((p) => {
                         // Broadcast the updated poll.
                         socket.emit('add choice', {
                             pollId: details.pollId,
+                            choiceId: p.choices[p.choices.length - 1]._id.toString(),
                             body: details.body,
-                            isAuthor: details.userId === poll.authorId.toString()
+                            editCount: poll.editCount,
+                            isAuthor: details['userId'] === p.authorId.toString()
                         });
 
                         // Done.
-                        return next(null);
+                        return next(null, p.choices[p.choices.length - 1]._id.toString());
                     }).catch((err) => {
                         console.error(`pollController.addChoice (save poll) - ${err.stack}`);
                         return next({ status: 500, message: 'Something went wrong while updating the poll. Try again later.' });
                     });
                 }
             ],
-            (err) => {
+            (err, choiceId) => {
                 if (err) { return done(err); }
                 return done(null, {
-                    message: 'Your choice has been added!'
+                    message: 'Your choice has been added!',
+                    choiceId
                 });
             }
         );
@@ -556,7 +654,7 @@ module.exports = {
     /// @brief  Edits the properties of a poll.
     ///
     /// Details:
-    ///     userId, pollId, issue, requiresLogin, canAddExtraChoices, pollWillClose, closeDate
+    ///     userId, pollId, issue, choices, requiresLogin, canAddExtraChoices, pollWillClose, closeDate
     ///
     /// @param  {object}    details The details object.
     /// @param  {object}    socket The Socket.IO object.
@@ -566,8 +664,48 @@ module.exports = {
         // Drippity Drippity Drippitah!
         waterfall(
             [
-                // Find the poll in our database.
+                // First, validate the poll credentials we were given.
                 (next) => {
+                    // Track validation errors.
+                    let errors = [];
+
+                    // Check to see if the user entered an issue.
+                    if (!details.issue) {
+                        errors.push('Please enter an issue.');
+                    }
+
+                    // The poll issue must contain 280 characters or fewer.
+                    else if (details.issue.length > 280) {
+                        errors.push('The poll issue must contain 280 characters or fewer.');
+                    }
+
+                    // If the poll is set to close, make sure the close date is actually a point in
+                    // the future.
+                    const closeDate = details.pollWillClose ? new Date(details.closeDate) : new Date();
+                    if (details.pollWillClose && Date.now() >= closeDate.getTime()) {
+                        errors.push('The poll\'s close date needs to be a point in the future.');
+                    }
+
+                    // Make sure the user added at least one keyword to the poll.
+                    if (!details.keywords || details.keywords.length === 0) {
+                        errors.push('Polls must have at least one keyword.');
+                    }
+
+                    // Check to see if any validation errors were raised.
+                    if (errors.length > 0) {
+                        return next({
+                            status: 400,
+                            message: 'There were validation errors in the poll you submitted.',
+                            details: errors
+                        });
+                    }
+
+                    // Next function.
+                    return next(null, closeDate);
+                },
+
+                // Find the poll in our database.
+                (closeDate, next) => {
                     pollModel.findById(details.pollId).then((poll) => {
                         if (!poll) {
                             return next({ status: 404, message: 'A poll with this ID was not found.' });
@@ -577,7 +715,7 @@ module.exports = {
                             return next({ status: 403, message: 'You are not the author of this poll.' });
                         }
 
-                        return next(null, poll);
+                        return next(null, poll, closeDate);
                     }).catch((err) => {
                         console.error(`pollController.editPoll (find poll) - ${err.stack}`);
                         return next({ status: 500, message: 'Something went wrong while finding the poll. Try again later.' });
@@ -585,36 +723,42 @@ module.exports = {
                 },
 
                 // Revise our poll.
-                (poll, next) => {
+                (poll, closeDate, next) => {
                     poll.issue = details.issue;
+                    poll.keywords = details.keywords;
                     poll.requiresLogin = details.requiresLogin;
                     poll.canAddExtraChoices = details.canAddExtraChoices;
                     poll.pollWillClose = details.pollWillClose;
-                    poll.closeDate = details.pollWillClose ? details.closeDate : null;
+                    poll.closeDate = details.pollWillClose ? closeDate : null;
+                    poll.editCount++;
                     
                     // Update the poll.
-                    poll.save().then(() => {
+                    poll.save().then((poll) => {
                         // Broadcast the updated poll.
                         socket.emit('edit poll', {
+                            pollId: details.pollId,
                             issue: poll.issue,
+                            keywords: poll.keywords,
                             requiresLogin: poll.requiresLogin,
                             canAddExtraChoices: poll.canAddExtraChoices,
                             pollWillClose: poll.pollWillClose,
-                            closeDate: poll.closeDate
+                            closeDate: poll.closeDate,
+                            editCount: poll.editCount
                         });
                         
                         // Done.
-                        return next(null);
+                        return next(null, details.pollId);
                     }).catch((err) => {
                         console.error(`pollController.editPoll (save poll) - ${err.stack}`);
                         return next({ status: 500, message: 'Something went wrong while updating the poll. Try again later.' });
                     });
                 }
             ],
-            (err) => {
+            (err, id) => {
                 if (err) { return done(err); }
                 return done(null, {
-                    message: 'Your poll has been revised!'
+                    message: 'Your poll has been revised!',
+                    pollId: id
                 });
             }
         );
@@ -634,6 +778,19 @@ module.exports = {
     editComment (details, socket, done) {
         waterfall(
             [
+                // Validate the comment.
+                (next) => {
+                    if (!details.body) {
+                        return next({ status: 400, message: 'Please enter a comment.' });
+                    }
+
+                    if (details.body.length > 280) {
+                        return next({ status: 400, message: 'Your comment contains too many characters.' });
+                    }
+
+                    return next(null);
+                },
+
                 // Find the poll in our database.
                 (next) => {
                     pollModel.findById(details.pollId).then((poll) => {
@@ -716,12 +873,6 @@ module.exports = {
                     }
 
                     poll.save().then(() => {
-                        // Broadcast the removed comment.
-                        socket.emit('remove comment', {
-                            pollId: details.pollId,
-                            commentId: details.commentId
-                        })
-
                         // Done.
                         return next(null);
                     }).catch((err) => {

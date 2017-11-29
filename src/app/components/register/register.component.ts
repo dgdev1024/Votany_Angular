@@ -1,4 +1,5 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { UserService } from '../../services/user.service';
 import { SocialService } from '../../services/social.service';
@@ -23,6 +24,7 @@ export class RegisterComponent implements OnInit {
   private m_errorDetails: string[] = [];
 
   constructor(
+    private titleService: Title,
     private routerService: Router,
     private userService: UserService,
     public socialService: SocialService,
@@ -30,7 +32,7 @@ export class RegisterComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    
+    this.titleService.setTitle('Register a New Account - Votany');
   }
 
   ///

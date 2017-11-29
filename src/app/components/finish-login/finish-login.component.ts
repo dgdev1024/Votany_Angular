@@ -12,7 +12,19 @@ import { FlashService, FlashType } from '../../services/flash.service';
 export class FinishLoginComponent implements OnInit {
 
   private redirect () {
-    this.routerService.navigate([ '/' ], { replaceUrl: true });
+    const returnUrl = localStorage.getItem('-vot-return-url');
+    const queryParamsString = localStorage.getItem('-vot-return-params');
+    let queryParams = {};
+
+    if (queryParamsString) {
+      try {
+        queryParams = JSON.parse(queryParamsString);
+      } catch (err) {}
+    }
+
+    localStorage.removeItem('-vot-return-url');
+    localStorage.removeItem('-vot-return-params');
+    this.routerService.navigate([ returnUrl ? returnUrl : '/' ], { replaceUrl: true, queryParams });
   }
 
   constructor(

@@ -9,8 +9,17 @@ export class SocialService {
 
   constructor() { }
 
-  socialSignin (event, provider: string) {
+  socialSignin (event, provider: string, returnUrl?: string, queryParams?: string) {
     event.preventDefault();
+
+    if (returnUrl) {
+      localStorage.setItem('-vot-return-url', returnUrl);
+    }
+
+    if (queryParams) {
+      localStorage.setItem('-vot-return-params', queryParams);
+    }
+
     window.location.href = `/api/user/login/${provider}`;
   }
 

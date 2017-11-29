@@ -71,6 +71,14 @@ module.exports = (io) => {
         });
     });
 
+    // GET: Check to see if Password Token exists.
+    router.get('/passwordTokenExists/:authenticateId', (req, res) => {
+        tokenController.tokenExists(req.params.authenticateId, (err, ok) => {
+            if (err) { return res.status(err.status).json({ error: err }); }
+            return res.status(200).json(ok);
+        });
+    });
+
     // POST: Local Login
     router.post('/login/local', (req, res) => {
         // Make sure the user entered their credentials, first.

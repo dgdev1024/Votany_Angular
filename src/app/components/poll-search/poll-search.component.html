@@ -1,0 +1,55 @@
+<div class="vot-search">
+  <div *ngIf="fetching === false || results.length > 0; else votFetchingResults">
+    <div *ngIf="error === ''; else votFetchError">
+      <span class="heading center">Search Results</span>
+      <span class="label center">
+        <span *ngIf="method === 'user'">Searching for Polls by a Specific User...</span>
+        <span *ngIf="method === 'keyword'">Searching for Polls by Keyword...</span>
+        <span *ngIf="method === 'hot'">Searching for The Hottest Polls...</span>
+        <span *ngIf="method === 'recent' || method === ''">Searching for The Most Recent Polls...</span>
+      </span>
+      <div *ngIf="results.length > 0; else votNoResults">
+        <div *ngFor="let poll of results" class="result">
+          <span class="heading">
+            <a routerLink="/poll/view/{{ poll.pollId }}">{{ poll.issue }}</a>
+          </span>
+          <span class="label slim left">
+            By: <a routerLink="/user/profile/{{ poll.authorId }}">{{ poll.authorName }}</a>
+          </span>
+          <span class="label slim right">
+            <em>
+              {{ poll.voteCount }} {{ poll.voteCount === 1 ? 'vote' : 'votes' }}, 
+              {{ poll.commentCount }} {{ poll.commentCount === 1 ? 'comment' : 'comments' }}
+              <span *ngIf="poll.edited">, {{ poll.editCount }} {{ poll.editCount === 1 ? 'edit' : 'edits' }}</span>
+            </em>
+          </span>
+        </div>
+        <span class="label center">
+          <button [disabled]="page === 0" class="primary" (click)="onPreviousClicked()">
+            <i class="fa fa-chevron-left"></i>
+          </button>
+          Page {{ page + 1 }}
+          <button [disabled]="lastPage" class="primary" (click)="onNextClicked()">
+            <i class="fa fa-chevron-right"></i>
+          </button>
+        </span>
+      </div>
+      <ng-template #votNoResults>
+        <span class="label center">
+          <em>Your search returned no results. Try another search.</em>
+        </span>
+      </ng-template>
+    </div>
+    <ng-template #votFetchError>
+      <span class="heading center">Whoops!</span>
+      <span class="label center">
+        We were unable to fetch your search results.<br />
+        <em>Error: {{ error }}</em>
+      </span>
+    </ng-template>
+  </div>
+  <ng-template #votFetchingResults>
+    <span class="heading center">Please Wait...</span>
+    <span class="label center">We are fetching the polls you requested.</span>
+  </ng-template>
+</div>

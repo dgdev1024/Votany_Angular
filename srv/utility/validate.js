@@ -59,7 +59,7 @@ module.exports = {
         }
 
         // Make sure the password has between 8 and 30 characters in length.
-        else if (pass < 8 || pass > 30) {
+        else if (pass.length < 8 || pass.length > 30) {
             return 'Passwords must have between 8 and 30 characters.';
         }
 

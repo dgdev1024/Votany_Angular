@@ -1,0 +1,136 @@
+<div class="vot-poll-view">
+  <div class="vot-poll-view-col {{ pollGood ? 'left' : 'center' }}">
+    
+    <!-- Error/Waiting Pane -->
+    <div *ngIf="pollGood === false" class="vot-poll-view-card">
+      <div *ngIf="pollFetching; else votNotFetchingPoll">
+        <span class="heading">Please Wait.</span>
+        <span class="label center">We are fetching the poll you requested.</span>
+      </div>
+      <ng-template #votNotFetchingPoll>
+        <span class="heading">Whoops!</span>
+        <span class="label center">
+          We could not fetch the poll you requested.<br />
+          <em>Error: {{ pollError }}</em>
+        </span>
+      </ng-template>
+    </div>
+
+    <!-- Issue Pane -->
+    <div *ngIf="pollGood" class="vot-poll-view-card">
+      <span class="heading">{{ poll.issue }}</span>
+      <span *ngIf="pollRemoved" class="label center slim error">
+        This poll has been removed by the author.
+      </span>
+      <span *ngIf="pollIsClosed" class="label center slim">
+        This poll is closed.
+      </span>
+      <span *ngIf="mustLogIn" class="label center slim">
+        You need to be logged in to vote on this poll.
+      </span>
+    </div>
+
+    <!-- Control Pane -->
+    <div *ngIf="isPollAuthor" class="vot-poll-view-card">
+      <button (click)="editPoll($event)" class="primary block">
+        <i class="fa fa-pencil"></i> Edit Poll
+      </button>
+      <button (click)="removePoll($event)" class="danger block">
+        <i class="fa fa-trash"></i> Delete Poll
+      </button>
+    </div>
+
+    <!-- Choice Pane -->
+    <div *ngIf="pollGood" class="vot-poll-view-card">
+      <span class="heading">The Choices</span>
+      <span *ngIf="choiceError !== ''" class="label center error">
+        {{ choiceError }}
+      </span>
+      <div *ngIf="cannotVote === false; else votCannotVote">
+        <span *ngFor="let choice of poll.choices" class="label center">
+          <input type="radio" [id]="choice.choiceId" [value]="choice.choiceId" name="choiceSelectedId" [(ngModel)]="choiceSelectedId" />
+          <label [for]="choice.choiceId">{{ choice.body }}</label>
+        </span>
+        <button class="confirm block" (click)="castVote($event)">
+          <i class="fa fa-check-square-o"></i> Cast Vote
+        </button>
+      </div>
+      <ng-template #votCannotVote>
+        <span *ngFor="let choice of poll.choices" class="heading small">
+          <i *ngIf="votedFor === choice.choiceId" class="fa fa-check"></i>
+          {{ choice.body }}<br />
+          <small><em>{{ choice.votes }} {{ choice.votes === 1 ? 'vote' : 'votes' }}</em></small>
+        </span>
+      </ng-template>
+      <div *ngIf="cannotAddChoices === false">
+        <span class="heading">
+          {{
+            isPollAuthor ? 'Want to Add Another Choice?' : 'Don\'t Like What You See?'
+          }}
+        </span>
+        <span class="label center">
+          Use the form below to add a new choice.
+        </span>
+        <input type="text" class="block" name="choiceInput" [(ngModel)]="choiceInput" placeholder="Write in a choice..." />
+        <button class="confirm block" (click)="addChoice($event)">
+          <i class="fa fa-pencil"></i> Write In Choice
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="pollGood" class="vot-poll-view-col right">
+    <div class="vot-poll-view-card">
+      <span class="heading">Poll Comments</span>
+      <div *ngIf="commentFetching === false || commentResult.length > 0; else votFetchingComments">
+        <div *ngIf="commentError === ''; else votCommentError">
+          <div *ngIf="tokenService.check() === true">
+            <textarea name="commentInput" [(ngModel)]="commentInput" placeholder="Enter a comment..." maxlength="280"></textarea>
+            <button [disabled]="commentLength > 280" (click)="postComment($event)" class="confirm block">
+              <i class="fa fa-plus"></i> Post Comment ({{ commentInput.length }} / 280)
+            </button>
+          </div>
+          <div *ngIf="commentResult.length > 0; else votNoComments">
+            <div *ngFor="let comment of commentResult">
+              <div *ngIf="commentEditId !== comment.commentId; else votEditingComment">
+                <span class="label">
+                  <span *ngIf="(comment.authorId === tokenService.get().id || poll.authorId === tokenService.get().id)">
+                    <button class="primary" (click)="setCommentEditId($event, comment.commentId)">
+                      <i class="fa fa-pencil"></i>
+                    </button>
+                    <button class="danger" (click)="removeComment($event, comment.commentId)">
+                      <i class="fa fa-trash"></i>
+                    </button>
+                  </span>
+                  <strong>{{ comment.authorName }}</strong> wrote:<br />
+                  {{ comment.body }}
+                </span>
+              </div>
+              <ng-template #votEditingComment>
+                <textarea name="commentEditInput" [(ngModel)]="commentEditInput" placeholder="Edit this comment..." maxlength="280"></textarea>
+                <button [disabled]="commentEditInput > 280" (click)="editComment($event)" class="confirm block"><i class="fa fa-pencil"></i> Finish Editing ({{ commentEditInput.length }} / 280)</button>
+                <button (click)="setCommentEditId($event, '')" class="danger block"><i class="fa fa-times"></i> Cancel Editing</button>
+              </ng-template>
+            </div>
+            <span class="label center">
+              <button [disabled]="commentPage === 0" class="primary" (click)="previousCommentPage($event)"><i class="fa fa-chevron-left"></i></button>
+              Page {{ commentPage + 1 }}
+              <button [disabled]="commentLastPage" class="primary" (click)="nextCommentPage($event)"><i class="fa fa-chevron-right"></i></button>
+            </span>
+          </div>
+          <ng-template #votNoComments>
+            <span class="label center"><em>No comments, yet!</em></span>
+          </ng-template>
+        </div>
+        <ng-template #votCommentError>
+          <span class="label center">
+            {{ commentError }}
+          </span>
+        </ng-template>
+      </div>
+      <ng-template #votFetchingComments>
+        <span class="label center"><em>Fetching Comments. Please Wait...</em></span>
+      </ng-template>
+    </div>
+  </div>
+</div>

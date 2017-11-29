@@ -21,6 +21,13 @@ import { LogoutComponent } from './components/logout/logout.component';
 import { PasswordTokenRequestComponent } from './components/password-token-request/password-token-request.component';
 import { PasswordTokenAuthComponent } from './components/password-token-auth/password-token-auth.component';
 import { ChangePasswordComponent } from './components/change-password/change-password.component';
+import { LoginGuard } from './guards/login.guard';
+import { NoLoginGuard } from './guards/no-login.guard';
+import { DatetimeComponent } from './components/datetime/datetime.component';
+import { PollService } from './services/poll.service';
+import { PollEditorComponent } from './components/poll-editor/poll-editor.component';
+import { PollViewComponent } from './components/poll-view/poll-view.component';
+import { PollSearchComponent } from './components/poll-search/poll-search.component';
 
 const routes: Routes = [
   {
@@ -59,6 +66,19 @@ const routes: Routes = [
   {
     path: 'user/changePassword/:authId',
     component: ChangePasswordComponent
+  },
+  {
+    path: 'poll/editor',
+    canActivate: [LoginGuard],
+    component: PollEditorComponent
+  },
+  {
+    path: 'poll/view/:pollId',
+    component: PollViewComponent
+  },
+  {
+    path: 'poll/search',
+    component: PollSearchComponent
   }
 ];
 
@@ -75,7 +95,11 @@ const routes: Routes = [
     LogoutComponent,
     PasswordTokenRequestComponent,
     PasswordTokenAuthComponent,
-    ChangePasswordComponent
+    ChangePasswordComponent,
+    DatetimeComponent,
+    PollEditorComponent,
+    PollViewComponent,
+    PollSearchComponent
   ],
   imports: [
     BrowserModule,
@@ -83,7 +107,7 @@ const routes: Routes = [
     HttpClientModule,
     RouterModule.forRoot(routes)
   ],
-  providers: [SocketService, TokenService, FlashService, UserService, SocialService],
+  providers: [SocketService, TokenService, FlashService, UserService, SocialService, LoginGuard, NoLoginGuard, PollService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

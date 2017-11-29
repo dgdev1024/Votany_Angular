@@ -21,13 +21,17 @@
 }
 
 html, body {
-    height: 100%;
     min-height: 100%;
-    background: -webkit-linear-gradient(to bottom, $page-background-start, $page-background-end 75%);
-    background: -moz-linear-gradient(to bottom, $page-background-start, $page-background-end 75%);
-    background: -o-linear-gradient(to bottom, $page-background-start, $page-background-end 75%);
-    background: -ms-linear-gradient(to bottom, $page-background-start, $page-background-end 75%);
-    background: linear-gradient(to bottom, $page-background-start, $page-background-end 75%);
+    background: $page-background;
+}
+
+a {
+    text-decoration: none;
+    color: darkgreen;
+
+    &:hover {
+        text-decoration: underline;
+    }
 }
 
 // Application body.
@@ -37,4 +41,7 @@ html, body {
 
     @import "./scss/home.scss";
     @import "./scss/form.scss";
+    @import "./scss/poll-editor.scss";
+    @import "./scss/poll-view.scss";
+    @import "./scss/poll-search.scss";
 }

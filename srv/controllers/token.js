@@ -116,6 +116,30 @@ module.exports = {
     },
 
     ///
+    /// @fn     tokenExists
+    /// @brief  Checks to see if a token with the given ID exists on the database.
+    ///
+    /// @param  {string}    id The ID of the password token.
+    /// @param  {function}  done Run when finished.
+    ///
+    tokenExists (id, done) {
+        tokenModel.findOne({ authenticateId: id }).then((token) => {
+            if (!token) {
+                return done(null, { found: false });
+            } else {
+                return done(null, {
+                    found: true,
+                    authenticated: token.authenticated,
+                    spent: token.spent
+                });
+            }
+        }).catch((err) => {
+            console.error(`tokenController.tokenExists (find token) - ${err.stack}`);
+            return done({ status: 500, message: 'Something went wrong while finding the token. Try again later.' });
+        });
+    },
+
+    ///
     /// @fn     authenticateToken
     /// @brief  Attempts to authenticate a password reset token.
     ///

@@ -1,0 +1,29 @@
+<span class="vot-datetime">
+  <span>
+    <select [disabled]="disabled" name="month" (change)="populateDays()" #votMonth>
+      <option selected>January</option>
+      <option>February</option>
+      <option>March</option>
+      <option>April</option>
+      <option>May</option>
+      <option>June</option>
+      <option>July</option>
+      <option>August</option>
+      <option>September</option>
+      <option>October</option>
+      <option>November</option>
+      <option>December</option>
+    </select>
+  </span>
+  <span>
+    <select [disabled]="disabled" name="day" #votDay>
+    </select>
+  </span>, 
+  <span>
+    <select [disabled]="disabled" name="year" #votYear>
+    </select>
+  </span> at 
+  <span>
+    <select [disabled]="disabled" name="hour" #votHour></select> : <select [disabled]="disabled" name="minute" #votMinute></select>
+  </span>
+</span>

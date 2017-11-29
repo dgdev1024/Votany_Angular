@@ -4,11 +4,11 @@
       Note: By signing in, you agree to be bound to the Terms and Conditions.
     </span>
     <div class="vot-form-element">
-      <button class="twitter" (click)="socialService.socialSignin($event, 'twitter')">
+      <button class="twitter" (click)="socialService.socialSignin($event, 'twitter', returnUrl, queryParams)">
         <i class="fa fa-twitter"></i> Sign In with Twitter
       </button>
     </div>
-    <div class="vot-form-element" (click)="socialService.socialSignin($event, 'facebook')">
+    <div class="vot-form-element" (click)="socialService.socialSignin($event, 'facebook', returnUrl, queryParams)">
       <button class="facebook">
         <i class="fa fa-facebook"></i> Sign In with Facebook
       </button>

@@ -4,6 +4,7 @@
 ///
 
 import { Injectable } from '@angular/core';
+import { HttpHeaders } from '@angular/common/http';
 import { Token as LoginToken } from '../interfaces/token';
 
 // The name of the key that will be associated with our login token.
@@ -69,6 +70,13 @@ export class TokenService {
 
   clear (): void {
     localStorage.clear();
+  }
+
+  bearer (): object {
+    const token = this.get();
+    return {
+      headers: new HttpHeaders().set('Authorization', token ? `Bearer ${token.raw}` : '')
+    };
   }
 
 }

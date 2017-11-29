@@ -1,4 +1,5 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { UserService } from '../../services/user.service';
 import { FlashService, FlashType } from '../../services/flash.service';
@@ -17,13 +18,14 @@ export class PasswordTokenRequestComponent implements OnInit {
   private m_errorDetails: string[] = [];
 
   constructor(
+    private titleService: Title,
     private routerService: Router,
     private userService: UserService,
     public flashService: FlashService
   ) { }
 
   ngOnInit() {
-    
+    this.titleService.setTitle('Request a Password Reset - Votany');
   }
 
   ///

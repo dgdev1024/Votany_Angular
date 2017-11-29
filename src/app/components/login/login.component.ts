@@ -1,5 +1,6 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
-import { Router } from '@angular/router';
+import { Title } from '@angular/platform-browser';
+import { Router, ActivatedRoute } from '@angular/router';
 import { UserService } from '../../services/user.service';
 import { TokenService } from '../../services/token.service';
 import { SocialService } from '../../services/social.service';
@@ -13,6 +14,8 @@ import { FlashService, FlashType } from '../../services/flash.service';
 })
 export class LoginComponent implements OnInit {
 
+  private m_returnUrl: string = '';
+  private m_queryParams: string = '';
   private m_emailAddress: string = '';
   private m_password: string = '';
   private m_working: boolean = false;
@@ -20,7 +23,9 @@ export class LoginComponent implements OnInit {
   private m_errorDetails: string[] = [];
 
   constructor(
+    private titleService: Title,
     private routerService: Router,
+    private activatedRoute: ActivatedRoute,
     private userService: UserService,
     private tokenService: TokenService,
     public socialService: SocialService,
@@ -28,7 +33,21 @@ export class LoginComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    
+    this.titleService.setTitle('Log In - Votany');
+    this.activatedRoute.queryParams.subscribe((params) => {
+      let queryParams = {};
+      for (const key in params) {
+        if (key === 'returnUrl') {
+          this.m_returnUrl = params[key] ? params[key] : '/';
+        } else {
+          queryParams[key] = params[key];
+        }
+      }
+
+      if (Object.keys(queryParams).length > 0) {
+        this.m_queryParams = JSON.stringify(queryParams);
+      }
+    });
   }
 
   ///
@@ -48,7 +67,10 @@ export class LoginComponent implements OnInit {
     ).subscribe(
       (response) => {
         this.tokenService.set(response['token']);
-        this.routerService.navigate([ '/' ], { replaceUrl: true });
+        this.routerService.navigate([ this.m_returnUrl ], { 
+          replaceUrl: true,
+          queryParams: this.m_queryParams ? JSON.parse(this.m_queryParams) : {}
+        });
       },
 
       (error) => {
@@ -61,6 +83,8 @@ export class LoginComponent implements OnInit {
   }
 
   // Getters
+  get returnUrl (): string { return this.m_returnUrl; }
+  get queryParams (): string { return this.m_queryParams; }
   get emailAddress (): string { return this.m_emailAddress; }
   get password (): string { return this.m_password; }
   get working (): boolean { return this.m_working; }
