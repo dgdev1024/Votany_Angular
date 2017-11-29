@@ -19,6 +19,15 @@
     <!-- Issue Pane -->
     <div *ngIf="pollGood" class="vot-poll-view-card">
       <span class="heading">{{ poll.issue }}</span>
+      <span class="label center slim">
+        Posted By: <a routerLink="/user/profile/{{ poll.authorId }}">{{ poll.authorName }}</a>
+      </span>
+      <span class="label center slim">
+        Posted On: {{ poll.postDateStr }}
+      </span>
+      <span *ngIf="pollEdited && !pollRemoved" class="label center slim">
+        This poll has just been edited by the author.
+      </span>
       <span *ngIf="pollRemoved" class="label center slim error">
         This poll has been removed by the author.
       </span>
@@ -49,7 +58,8 @@
       <div *ngIf="cannotVote === false; else votCannotVote">
         <span *ngFor="let choice of poll.choices" class="label center">
           <input type="radio" [id]="choice.choiceId" [value]="choice.choiceId" name="choiceSelectedId" [(ngModel)]="choiceSelectedId" />
-          <label [for]="choice.choiceId">{{ choice.body }}</label>
+          <label [for]="choice.choiceId">{{ choice.body }}</label><br />
+          <small><em>{{ choice.votes }} {{ choice.votes === 1 ? 'vote' : 'votes' }}</em></small>
         </span>
         <button class="confirm block" (click)="castVote($event)">
           <i class="fa fa-check-square-o"></i> Cast Vote
@@ -71,11 +81,19 @@
         <span class="label center">
           Use the form below to add a new choice.
         </span>
-        <input type="text" class="block" name="choiceInput" [(ngModel)]="choiceInput" placeholder="Write in a choice..." />
-        <button class="confirm block" (click)="addChoice($event)">
-          <i class="fa fa-pencil"></i> Write In Choice
-        </button>
+        <form (submit)="addChoice($event)">
+          <input type="text" class="block" name="choiceInput" [(ngModel)]="choiceInput" placeholder="Write in a choice..." />
+          <button type="submit" [disabled]="choiceInput === ''" class="confirm block">
+            <i class="fa fa-pencil"></i> Write In Choice
+          </button>
+        </form>
       </div>
+    </div>
+
+    <!-- Chart Pane -->
+    <div class="vot-poll-view-card {{ pollGood ? '' : 'hidden' }}">
+      <span class="heading">Vote Chart</span>
+      <app-vote-chart #votChart></app-vote-chart>
     </div>
   </div>
 
@@ -85,31 +103,37 @@
       <div *ngIf="commentFetching === false || commentResult.length > 0; else votFetchingComments">
         <div *ngIf="commentError === ''; else votCommentError">
           <div *ngIf="tokenService.check() === true">
+            <span *ngIf="commentInputError !== ''" class="label center error">{{ commentInputError }}</span>
             <textarea name="commentInput" [(ngModel)]="commentInput" placeholder="Enter a comment..." maxlength="280"></textarea>
-            <button [disabled]="commentLength > 280" (click)="postComment($event)" class="confirm block">
+            <button [disabled]="commentInput.length === 0 || commentInput.length > 280" (click)="postComment($event)" class="confirm block">
               <i class="fa fa-plus"></i> Post Comment ({{ commentInput.length }} / 280)
             </button>
           </div>
           <div *ngIf="commentResult.length > 0; else votNoComments">
             <div *ngFor="let comment of commentResult">
-              <div *ngIf="commentEditId !== comment.commentId; else votEditingComment">
-                <span class="label">
-                  <span *ngIf="(comment.authorId === tokenService.get().id || poll.authorId === tokenService.get().id)">
-                    <button class="primary" (click)="setCommentEditId($event, comment.commentId)">
-                      <i class="fa fa-pencil"></i>
-                    </button>
-                    <button class="danger" (click)="removeComment($event, comment.commentId)">
-                      <i class="fa fa-trash"></i>
-                    </button>
+              <div *ngIf="!comment.deleted; else votCommentDeleted">
+                <div *ngIf="commentEditId !== comment.commentId; else votEditingComment">
+                  <span class="label">
+                    <span *ngIf="tokenService.check() === true && (comment.authorId === tokenService.get().id || poll.authorId === tokenService.get().id)">
+                      <button class="primary" (click)="setCommentEditId($event, comment.commentId)">
+                        <i class="fa fa-pencil"></i>
+                      </button>
+                      <button class="danger" (click)="removeComment($event, comment.commentId)">
+                        <i class="fa fa-trash"></i>
+                      </button>
+                    </span>
+                    <strong>{{ comment.authorName }}</strong> wrote:<br />
+                    {{ comment.body }}
                   </span>
-                  <strong>{{ comment.authorName }}</strong> wrote:<br />
-                  {{ comment.body }}
-                </span>
+                </div>
+                <ng-template #votEditingComment>
+                  <textarea name="commentEditInput" [(ngModel)]="commentEditInput" placeholder="Edit this comment..." maxlength="280"></textarea>
+                  <button [disabled]="commentEditInput > 280" (click)="editComment($event)" class="confirm block"><i class="fa fa-pencil"></i> Finish Editing ({{ commentEditInput.length }} / 280)</button>
+                  <button (click)="setCommentEditId($event, '')" class="danger block"><i class="fa fa-times"></i> Cancel Editing</button>
+                </ng-template>
               </div>
-              <ng-template #votEditingComment>
-                <textarea name="commentEditInput" [(ngModel)]="commentEditInput" placeholder="Edit this comment..." maxlength="280"></textarea>
-                <button [disabled]="commentEditInput > 280" (click)="editComment($event)" class="confirm block"><i class="fa fa-pencil"></i> Finish Editing ({{ commentEditInput.length }} / 280)</button>
-                <button (click)="setCommentEditId($event, '')" class="danger block"><i class="fa fa-times"></i> Cancel Editing</button>
+              <ng-template #votCommentDeleted>
+                <span class="label"><em>This comment has been deleted.</em></span>
               </ng-template>
             </div>
             <span class="label center">

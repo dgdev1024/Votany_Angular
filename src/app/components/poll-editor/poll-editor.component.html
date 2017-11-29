@@ -16,7 +16,7 @@
         {{ issue.length }} / 280
       </span>
     </div>
-    <div *ngIf="editingPoll === false" class="vot-poll-form-card">
+    <div  class="vot-poll-form-card">
       <span class="heading">The Choices to be Voted For</span>
       <span *ngIf="choiceError !== ''" class="label center error">
         {{ choiceError }}
@@ -41,10 +41,10 @@
           </ng-template>
         </li>
       </ul>
-      <form (submit)="addChoice($event)">
+      <form *ngIf="editingPoll === false" (submit)="addChoice($event)">
         <input type="text" class="block" name="choiceInput" [(ngModel)]="choiceInput" maxlength="140" />
         <span class="label center">{{ choiceInput.length }} / 140</span>
-        <button type="submit" class="confirm block"><i class="fa fa-plus"></i> Add Choice</button>
+        <button [disabled]="choiceInput === ''" type="submit" class="confirm block"><i class="fa fa-plus"></i> Add Choice</button>
       </form>
     </div>
   </div>
@@ -73,11 +73,11 @@
       <input type="text" class="block" name="keywords" [(ngModel)]="keywords" placeholder="Enter some keywords." />
     </div>
     <div class="vot-poll-form-card">
-      <button class="confirm block" (click)="submitPoll($event)">
+      <button [disabled]="edited === false" class="confirm block" (click)="submitPoll($event)">
         <i class="fa fa-check"></i> {{ editingPoll ? 'Finish Editing' : 'Submit Poll' }}
       </button>
       <button class="primary block {{ editingPoll ? 'hidden' : '' }}" (click)="savePollDraft()"><i class="fa fa-save"></i> Save Poll</button>
-      <button class="danger block {{ editingPoll ? '' : 'hidden' }}" (click)="cancelEditing($event)"><i class="fa fa-times"></i> Cancel Editing</button>
+      <button class="danger block {{ editingPoll ? '' : 'hidden' }}" routerLink="/poll/view/{{ editId }}"><i class="fa fa-times"></i> Cancel Editing</button>
     </div>
   </div>
 </div>

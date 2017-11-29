@@ -28,6 +28,8 @@ import { PollService } from './services/poll.service';
 import { PollEditorComponent } from './components/poll-editor/poll-editor.component';
 import { PollViewComponent } from './components/poll-view/poll-view.component';
 import { PollSearchComponent } from './components/poll-search/poll-search.component';
+import { ProfileComponent } from './components/profile/profile.component';
+import { VoteChartComponent } from './components/vote-chart/vote-chart.component';
 
 const routes: Routes = [
   {
@@ -37,18 +39,22 @@ const routes: Routes = [
   },
   {
     path: 'user/register',
+    canActivate: [NoLoginGuard],
     component: RegisterComponent
   },
   {
     path: 'user/verify/:verifyId',
+    canActivate: [NoLoginGuard],
     component: LocalVerifyComponent
   },
   {
     path: 'user/login',
+    canActivate: [NoLoginGuard],
     component: LoginComponent
   },
   {
     path: 'finishlogin',
+    canActivate: [NoLoginGuard],
     component: FinishLoginComponent
   },
   {
@@ -66,6 +72,10 @@ const routes: Routes = [
   {
     path: 'user/changePassword/:authId',
     component: ChangePasswordComponent
+  },
+  {
+    path: 'user/profile/:userId',
+    component: ProfileComponent
   },
   {
     path: 'poll/editor',
@@ -99,7 +109,9 @@ const routes: Routes = [
     DatetimeComponent,
     PollEditorComponent,
     PollViewComponent,
-    PollSearchComponent
+    PollSearchComponent,
+    ProfileComponent,
+    VoteChartComponent
   ],
   imports: [
     BrowserModule,

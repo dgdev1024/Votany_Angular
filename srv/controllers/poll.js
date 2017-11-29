@@ -731,6 +731,20 @@ module.exports = {
                     poll.pollWillClose = details.pollWillClose;
                     poll.closeDate = details.pollWillClose ? closeDate : null;
                     poll.editCount++;
+
+                    // Check for any removed choices.
+                    poll.choices = poll.choices.filter((c) => {
+                        return details.removedChoices.indexOf(c._id.toString()) === -1;
+                    });
+
+                    // Check for any edited choices.
+                    for (const pollChoice of poll.choices) {
+                        for (const editedChoice of details.editedChoices) {
+                            if (pollChoice._id.toString() === editedChoice.choiceId) {
+                                pollChoice.body = editedChoice.body;
+                            }
+                        }
+                    }
                     
                     // Update the poll.
                     poll.save().then((poll) => {
@@ -738,6 +752,7 @@ module.exports = {
                         socket.emit('edit poll', {
                             pollId: details.pollId,
                             issue: poll.issue,
+                            choices: poll.choices.map(c => { return { choiceId: c._id.toString(), body: c.body, votes: c.voters.length }; }),
                             keywords: poll.keywords,
                             requiresLogin: poll.requiresLogin,
                             canAddExtraChoices: poll.canAddExtraChoices,
@@ -873,6 +888,11 @@ module.exports = {
                     }
 
                     poll.save().then(() => {
+                        socket.emit('remove comment', {
+                            pollId: details.pollId,
+                            commentId: details.commentId
+                        });
+
                         // Done.
                         return next(null);
                     }).catch((err) => {

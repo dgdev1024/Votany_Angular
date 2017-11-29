@@ -1,0 +1,78 @@
+<div class="vot-profile">
+  <div *ngIf="userFetching === false; else votFetchUser">
+    <div *ngIf="userError === ''; else votFetchUserError">
+      <div class="vot-profile-pane">
+        <span class="heading center">
+          <span *ngIf="user.loginMethod === 'facebook'"><i class="fa fa-facebook"></i></span>
+          <span *ngIf="user.loginMethod === 'twitter'"><i class="fa fa-twitter"></i></span>
+          {{ user.name }}'s Profile
+        </span>
+      </div>
+      <div class="vot-profile-pane">
+        <span class="heading center">Account Details</span>
+        <span class="label center slim">Name: {{ user.name }}</span>
+        <span *ngIf="user.loginMethod === 'local'" class="label center slim">
+          Email Address: {{ user.emailAddress }}
+        </span>
+        <span class="label center slim">Join Date: {{ user.joinDateStr }}</span>
+      </div>
+      <div class="vot-profile-pane">
+        <span class="heading center">Polls By This User</span>
+        <div *ngIf="pollFetching === false; else votFetchPolls">
+          <div *ngIf="pollError === ''; else votFetchPollsError">
+            <div *ngFor="let poll of polls" class="result">
+              <span class="heading">
+                <a routerLink="/poll/view/{{ poll.pollId }}">{{ poll.issue }}</a>
+              </span>
+              <span class="label slim left">
+                On: {{ poll.postDateStr }}
+              </span>
+              <span class="label slim right">
+                <em>
+                  {{ poll.voteCount }} {{ poll.voteCount === 1 ? 'vote' : 'votes' }}, 
+                  {{ poll.commentCount }} {{ poll.commentCount === 1 ? 'comment' : 'comments' }}
+                  <span *ngIf="poll.edited">, {{ poll.editCount }} {{ poll.editCount === 1 ? 'edit' : 'edits' }}</span>
+                </em>
+              </span>
+            </div>
+            <span class="label center">
+              <button [disabled]="pollPage === 0" class="primary" (click)="onPreviousClicked()">
+                <i class="fa fa-chevron-left"></i>
+              </button>
+              Page {{ pollPage + 1 }}
+              <button [disabled]="pollLastPage" class="primary" (click)="onNextClicked()">
+                <i class="fa fa-chevron-right"></i>
+              </button>
+            </span>
+          </div>
+          <ng-template #votFetchPollsError>
+            <span class="label center">
+              <em>{{ pollError }}</em>
+            </span>
+          </ng-template>
+        </div>
+        <ng-template #votFetchPolls>
+          <span class="label center">
+            <em>Fetching Polls. Please Wait...</em>
+          </span>
+        </ng-template>
+      </div>
+    <ng-template #votFetchUserError>
+      <div class="vot-profile-pane">
+        <span class="heading center">Whoops!</span>
+        <span class="label center">
+          We were unable to fetch the user profile you requested.
+          <em>Error: {{ userError }}</em>
+        </span>
+      </div>
+    </ng-template>
+  </div>
+  <ng-template #votFetchUser>
+    <div class="vot-profile-pane">
+      <span class="heading center">Please Wait...</span>
+      <span class="label center">
+        <em>We are fetching the user profile you requested.</em>
+      </span>
+    </div>
+  </ng-template>
+</div>

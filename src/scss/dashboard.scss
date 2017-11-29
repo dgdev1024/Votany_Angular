@@ -1,0 +1,136 @@
+.vot-dashboard {
+    width: 70%;
+    margin: 16px auto;
+    overflow: auto;
+
+    @media #{$md-screen} {
+        width: 85%;
+    }
+
+    @media #{$sm-screen} {
+        width: 98%;
+    }
+
+    .vot-dashboard-pane {
+        width: 100%;
+        margin-bottom: 16px;
+        padding: 12px;
+        box-sizing: border-box;
+        background-color: $form-background;
+        color: $form-text;
+        @include box-shadow(10px, 10px, 15px, rgba(0, 0, 0, 0.5));
+
+        .heading {
+            display: block;
+            padding: 4px 0px 8px 0px;
+            font-size: 28px;
+    
+            @media #{$sm-screen} {
+                font-size: 22px;
+            }
+    
+            &.center {
+                text-align: center;
+            }
+        }
+
+        .label {
+            display: block;
+            margin-bottom: 4px;
+            padding-bottom: 4px;
+            font-size: 18px;
+    
+            @media #{$sm-screen} {
+                font-size: 16px;
+            }
+    
+            &.inline {
+                display: inline-block;
+            }
+    
+            &.center {
+                text-align: center;
+            }
+
+            &.slim {
+                margin-bottom: 1px;
+                padding-bottom: 1px;
+            }
+        }
+
+        .result {
+            margin: 8px 0px;
+            border-bottom: 1px solid $form-text;
+    
+            .heading {
+                padding: 4px;
+                font-size: 22px;
+    
+                @media #{$sm-screen} {
+                    font-size: 20px;
+                }
+            }
+    
+            .label {
+                margin: 2px;
+                padding: 4px 2px;
+    
+                @media #{$sm-screen} {
+                    font-size: 16px;
+                }
+    
+                &.left {
+                    float: left;
+                }
+    
+                &.right {
+                    float: right;
+                }
+            }
+    
+            &:after {
+                content: "";
+                display: block;
+                clear: both;
+            }
+        }
+        
+        button {
+            display: inline-block;
+            margin: 4px 4px 4px 0px;
+            padding: 8px;
+            font-size: 18px;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            border: none;
+            @include box-shadow(3px, 3px, 5px, rgba(0, 0, 0, 0.3));
+    
+            @media #{$sm-screen} {
+                font-size: 16px;
+            }
+            
+            &:hover {
+                background-color: rgba(0, 0, 0, 0.5);
+                cursor: pointer;
+            }
+    
+            &.primary {
+                background-color: rgba(0, 0, 50, 0.8);
+                
+                &:hover {
+                    background-color: rgba(0, 0, 50, 0.5);
+                }
+            }
+    
+            &:disabled {
+                background-color: rgba(0, 0, 0, 0.3);
+                color: gray;
+    
+                &:hover {
+                    background-color: rgba(0, 0, 0, 0.3);
+                    cursor: default;
+                }
+            }
+        }
+    }
+}

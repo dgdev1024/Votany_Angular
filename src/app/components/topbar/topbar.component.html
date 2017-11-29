@@ -11,20 +11,19 @@
       <span class="vot-menu-item">
         <form (submit)="onSearchSubmit($event)">
           <input type="text" class="vot-menu-input" name="searchQuery" [(ngModel)]="searchQuery" placeholder="Search Polls" />
-          <button type="submit" class="vot-menu-button vot-topbar-hoverable">
+          <button type="submit" class="vot-menu-button vot-topbar-hoverable" title="Search For Polls">
             <i class="fa fa-search"></i><span> Search</span>
           </button>
         </form>
       </span>
+      <a routerLink="/poll/search" [queryParams]="{ method: 'hot' }" class="vot-menu-item vot-topbar-hoverable" (click)="resetMobileMenu()">Hot Polls</a>
+      <a routerLink="/poll/search" [queryParams]="{ method: 'recent' }" class="vot-menu-item vot-topbar-hoverable" (click)="resetMobileMenu()">Recent Polls</a>
       <span *ngIf="tokenService.check() === true; else votNotLoggedIn">
-        <a routerLink="/" class="vot-menu-item vot-topbar-hoverable" (click)="resetMobileMenu()">Dashboard</a>
-        <a href="#" class="vot-menu-item vot-topbar-hoverable" (click)="resetMobileMenu()">Profile</a>
+        <a routerLink="/user/profile/{{ tokenService.get().id }}" class="vot-menu-item vot-topbar-hoverable" (click)="resetMobileMenu()">Profile</a>
         <a routerLink="/poll/editor" class="vot-menu-item vot-topbar-hoverable" (click)="resetMobileMenu()">Create Poll</a>
         <a routerLink="/user/logout" class="vot-menu-item vot-topbar-hoverable" (click)="resetMobileMenu()">Log Out</a>
       </span>
       <ng-template #votNotLoggedIn>
-        <a routerLink="/" class="vot-menu-item vot-topbar-hoverable" (click)="resetMobileMenu()">Home</a>
-        <a routerLink="/poll/search" queryParams="{ method: 'recent' }" class="vot-menu-item vot-topbar-hoverable" (click)="resetMobileMenu()">Recent Polls</a>
         <a routerLink="/user/login" class="vot-menu-item vot-topbar-hoverable" (click)="resetMobileMenu()">Log In</a>
         <a routerLink="/user/register" class="vot-menu-item vot-topbar-hoverable" (click)="resetMobileMenu()">Sign Up</a>
       </ng-template>

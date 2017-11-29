@@ -180,6 +180,8 @@ module.exports = (socket) => {
                 userId: user.id,
                 pollId: req.params.pollId,
                 issue: req.body.issue,
+                removedChoices: req.body.removedChoices,
+                editedChoices: req.body.editedChoices,
                 keywords: req.body.keywords,
                 requiresLogin: req.body.requiresLogin,
                 canAddExtraChoices: req.body.canAddExtraChoices,

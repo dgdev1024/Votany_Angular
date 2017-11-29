@@ -195,7 +195,7 @@ pollSchema.methods.addChoice = function (userId, choiceBody) {
 pollSchema.methods.editComment = function (userId, commentId, body) {
     for (let comment of this.comments) {
         if (comment._id.toString() === commentId) {
-            if (comment.authorId.toString() !== userId && this.authorId.toString !== userId) {
+            if (comment.authorId.toString() !== userId && this.authorId.toString() !== userId) {
                 return 'You are not the author of this comment.';
             }
 
@@ -212,7 +212,7 @@ pollSchema.methods.editComment = function (userId, commentId, body) {
 pollSchema.methods.removeComment = function (userId, commentId) {
     for (let i = 0; i < this.comments.length; ++i) {
         if (this.comments[i]._id.toString() === commentId) {
-            if (this.comments[i].authorId.toString() !== userId && this.authorId.toString !== userId) {
+            if (this.comments[i].authorId.toString() !== userId && this.authorId.toString() !== userId) {
                 return 'You are not the author of this comment.';
             }
 

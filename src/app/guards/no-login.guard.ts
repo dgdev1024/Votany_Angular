@@ -11,7 +11,7 @@ export class NoLoginGuard implements CanActivate {
 
   canActivate (next: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
     if (this.tokenService.check() === true) {
-      this.routerService.navigate([ '/user/dashboard' ], { queryParams: { returnUrl: state.url }});
+      this.routerService.navigate([ '/user/dashboard' ], { replaceUrl: true });
       return false;
     }
     return true;

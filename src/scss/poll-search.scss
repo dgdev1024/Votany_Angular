@@ -52,12 +52,15 @@
     
     .result {
         margin: 8px 0px;
-        border-top: 1px solid $form-text;
         border-bottom: 1px solid $form-text;
 
         .heading {
             padding: 4px;
             font-size: 22px;
+
+            @media #{$sm-screen} {
+                font-size: 20px;
+            }
         }
 
         .label {

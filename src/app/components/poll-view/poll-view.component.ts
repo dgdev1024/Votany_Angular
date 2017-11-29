@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewEncapsulation, ViewChild } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { Location } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -7,6 +7,8 @@ import { SocketService } from '../../services/socket.service';
 import { PollService } from '../../services/poll.service';
 import { FlashService, FlashType } from '../../services/flash.service';
 import { Poll, PollChoice, PollComment } from '../../interfaces/poll';
+import { VoteChartComponent } from '../vote-chart/vote-chart.component';
+import * as moment from 'moment';
 
 @Component({
   selector: 'app-poll-view',
@@ -22,6 +24,7 @@ export class PollViewComponent implements OnInit, OnDestroy {
   private m_pollError: string = '';
   private m_pollResult: Poll = null;
   private m_pollRemoved: boolean = false;
+  private m_pollEdited: boolean = false;
 
   // Choice Variables
   private m_choiceSelectedId: string = '';
@@ -43,17 +46,21 @@ export class PollViewComponent implements OnInit, OnDestroy {
   private m_commentAdding: boolean = false;
   private m_commentEditing: boolean = false;
 
+  // Grab the Vote Chart.
+  @ViewChild('votChart') voteChart: VoteChartComponent;
+
   ///
   /// @fn     initializeEvents
   /// @brief  Initializes our Socket.IO events.
   ///
-  private initializeEvents () {
+  private initializeEvents() {
     // When a vote is cast...
     this.socketService.on('cast vote', (data) => {
       if (data['pollId'] === this.m_pollId) {
         for (const choice of this.m_pollResult.choices) {
           if (choice.choiceId === data['choiceId']) {
             choice.votes++;
+            this.voteChart.initializeChart(this.m_pollResult.choices);
           }
         }
       }
@@ -62,26 +69,21 @@ export class PollViewComponent implements OnInit, OnDestroy {
     // When a new choice is written in...
     this.socketService.on('add choice', (data) => {
       if (data['pollId'] === this.m_pollId) {
-        this.m_pollResult.choices.push({ 
-          choiceId: data['choiceId'], 
-          body: data['body'], 
-          votes: data['isAuthor'] ? 0 : 1 
+        this.m_pollResult.choices.push({
+          choiceId: data['choiceId'],
+          body: data['body'],
+          votes: data['isAuthor'] ? 0 : 1
         });
         this.m_pollResult.edited = true;
         this.m_pollResult.editCount = data['editCount'];
+        this.voteChart.initializeChart(this.m_pollResult.choices);
       }
     });
 
     // When a poll has been edited.
     this.socketService.on('edit poll', (data) => {
       if (data['pollId'] === this.m_pollId) {
-        this.m_pollResult.issue = data['issue'];
-        this.m_pollResult.searchKeywords = data['keywords'];
-        this.m_pollResult.requiresLogin = data['requiresLogin'];
-        this.m_pollResult.canAddExtraChoices = data['canAddExtraChoices'];
-        this.m_pollResult.pollWillClose = data['pollWillClose'];
-        this.m_pollResult.closeDate = data['pollWillClose'] ? new Date(data['closeDate']) : null;
-        this.titleService.setTitle(`${this.m_pollResult.issue} - Votany`);
+        this.m_pollEdited = true;
       }
     });
 
@@ -104,7 +106,7 @@ export class PollViewComponent implements OnInit, OnDestroy {
             postDate: data['postDate'],
             deleted: false
           });
-  
+
           if (this.m_commentResult.length > 20) {
             this.m_commentResult.pop();
             this.m_commentLastPage = false;
@@ -112,7 +114,7 @@ export class PollViewComponent implements OnInit, OnDestroy {
         }
       }
     });
-    
+
     // When a comment has been edited.
     this.socketService.on('edit comment', (data) => {
       if (data['pollId'] === this.m_pollId) {
@@ -124,13 +126,25 @@ export class PollViewComponent implements OnInit, OnDestroy {
         }
       }
     });
+    
+    // When a comment has been removed.
+    this.socketService.on('remove comment', (data) => {
+      if (data['pollId'] === this.m_pollId) {
+        for (const comment of this.m_commentResult) {
+          if (comment.commentId === data['commentId']) {
+            comment.deleted = true;
+            break;
+          }
+        }
+      }
+    });
   }
 
   ///
   /// @fn     fetchComments
   /// @brief  Fetches the comments on the poll.
   ///
-  private fetchComments (page: number = 0) {
+  private fetchComments(page: number = 0) {
     this.m_commentFetching = true;
     this.m_commentError = '';
     this.m_commentPage = page;
@@ -163,19 +177,21 @@ export class PollViewComponent implements OnInit, OnDestroy {
   /// @fn     fetchPoll
   /// @brief  Fetches the requested poll.
   ///
-  private fetchPoll (initSocket: boolean = true) {
+  private fetchPoll(initSocket: boolean = true) {
     this.m_pollResult = null;
     this.m_pollFetching = true;
 
     this.pollService.viewPoll(this.m_pollId).subscribe(
       (response: Poll) => {
+        response.postDateStr = moment(response.postDate).format('MMMM Do YYYY');
         this.m_pollResult = response;
-        this.m_pollFetching = false;
+        this.voteChart.initializeChart(this.m_pollResult.choices);
 
         if (initSocket === true) {
           this.initializeEvents();
         }
 
+        this.m_pollFetching = false;
         this.titleService.setTitle(`${this.m_pollResult.issue} - Votany`);
       },
 
@@ -210,7 +226,7 @@ export class PollViewComponent implements OnInit, OnDestroy {
     });
   }
 
-  ngOnDestroy () {
+  ngOnDestroy() {
     this.socketService.clear();
   }
 
@@ -218,7 +234,7 @@ export class PollViewComponent implements OnInit, OnDestroy {
   /// @fn     castVote
   /// @brief  Casts a vote on a poll.
   ///
-  castVote (event) {
+  castVote(event) {
     event.preventDefault();
 
     if (this.m_choiceSelectedId === '') {
@@ -240,10 +256,10 @@ export class PollViewComponent implements OnInit, OnDestroy {
 
       (error) => {
         const { status, message } = error.error['error'];
-        
+
         if (status === 401) {
           this.flashService.deploy(message, [], FlashType.Error);
-          this.routerService.navigate([ '/user/login' ], {
+          this.routerService.navigate(['/user/login'], {
             queryParams: {
               returnUrl: `/poll/view/${this.m_pollId}`,
               commentPage: this.m_commentPage.toString()
@@ -261,7 +277,7 @@ export class PollViewComponent implements OnInit, OnDestroy {
   /// @fn     addChoice
   /// @brief  Adds a new choice to the poll.
   ///
-  addChoice (event) {
+  addChoice(event) {
     event.preventDefault();
     this.m_choiceError = '';
     this.m_choiceAdding = true;
@@ -277,10 +293,10 @@ export class PollViewComponent implements OnInit, OnDestroy {
 
       (error) => {
         const { status, message } = error.error['error'];
-        
+
         if (status === 401) {
           this.flashService.deploy(message, [], FlashType.Error);
-          this.routerService.navigate([ '/user/login' ], {
+          this.routerService.navigate(['/user/login'], {
             queryParams: {
               returnUrl: `/poll/view/${this.m_pollId}`,
               commentPage: this.m_commentPage.toString()
@@ -298,7 +314,7 @@ export class PollViewComponent implements OnInit, OnDestroy {
   /// @fn     postComment
   /// @brief  Posts a new comment on a poll.
   ///
-  postComment (event) {
+  postComment(event) {
     event.preventDefault();
     this.m_commentInputError = '';
     this.m_commentAdding = true;
@@ -318,7 +334,7 @@ export class PollViewComponent implements OnInit, OnDestroy {
 
         if (status === 401) {
           this.flashService.deploy(message, [], FlashType.Error);
-          this.routerService.navigate([ '/user/login' ], {
+          this.routerService.navigate(['/user/login'], {
             queryParams: {
               returnUrl: `/poll/view/${this.m_pollId}`,
               commentPage: this.m_commentPage.toString()
@@ -336,10 +352,10 @@ export class PollViewComponent implements OnInit, OnDestroy {
   /// @fn     editPoll
   /// @brief  Takes the poll's author to the Poll Editor to edit this poll.
   ///
-  editPoll (event) {
+  editPoll(event) {
     event.preventDefault();
     if (this.isPollAuthor) {
-      this.routerService.navigate([ '/poll/editor' ], {
+      this.routerService.navigate(['/poll/editor'], {
         queryParams: {
           editId: this.m_pollId
         }
@@ -351,7 +367,7 @@ export class PollViewComponent implements OnInit, OnDestroy {
   /// @fn     setCommentEditId
   /// @brief  Sets the current comment edit ID.
   ///
-  setCommentEditId (event, id: string) {
+  setCommentEditId(event, id: string) {
     event.preventDefault();
 
     if (id === '') {
@@ -374,35 +390,35 @@ export class PollViewComponent implements OnInit, OnDestroy {
   /// @fn     editComment
   /// @brief  Edits a comment on a poll.
   ///
-  editComment (event) {
+  editComment(event) {
     event.preventDefault();
     this.m_commentInputError = '';
     this.m_commentEditing = true;
 
     this.pollService.editComment(this.m_pollId, this.m_commentEditId, this.m_commentEditInput)
       .subscribe(
-        (response) => {
-          this.m_commentEditInput = '';
-          this.m_commentEditId = '';
-          this.m_commentEditing = false;
-        },
+      (response) => {
+        this.m_commentEditInput = '';
+        this.m_commentEditId = '';
+        this.m_commentEditing = false;
+      },
 
-        (error) => {
-          const { status, message } = error.error['error'];
-          
-          if (status === 401) {
-            this.flashService.deploy(message, [], FlashType.Error);
-            this.routerService.navigate([ '/user/login' ], {
-              queryParams: {
-                returnUrl: `/poll/view/${this.m_pollId}`,
-                commentPage: this.m_commentPage.toString()
-              }
-            });
-          } else {
-            this.m_commentInputError = message;
-            this.m_commentEditing = false;
-          }
+      (error) => {
+        const { status, message } = error.error['error'];
+
+        if (status === 401) {
+          this.flashService.deploy(message, [], FlashType.Error);
+          this.routerService.navigate(['/user/login'], {
+            queryParams: {
+              returnUrl: `/poll/view/${this.m_pollId}`,
+              commentPage: this.m_commentPage.toString()
+            }
+          });
+        } else {
+          this.m_commentInputError = message;
+          this.m_commentEditing = false;
         }
+      }
       );
   }
 
@@ -410,7 +426,7 @@ export class PollViewComponent implements OnInit, OnDestroy {
   /// @fn     removePoll
   /// @brief  Allows the poll's author to remove the poll.
   ///
-  removePoll (event) {
+  removePoll(event) {
     event.preventDefault();
     if (this.isPollAuthor) {
       const ays = confirm('This will delete your poll. Are you sure?');
@@ -419,15 +435,15 @@ export class PollViewComponent implements OnInit, OnDestroy {
       this.pollService.removePoll(this.m_pollId).subscribe(
         (response) => {
           this.flashService.deploy(response['message'], [], FlashType.Error);
-          this.routerService.navigate([ '/' ], { replaceUrl: true });
+          this.routerService.navigate(['/'], { replaceUrl: true });
         },
 
         (error) => {
           const { status, message } = error.error['error'];
           this.flashService.deploy(message, [], FlashType.Error);
-          
+
           if (status === 401) {
-            this.routerService.navigate([ '/user/login' ], {
+            this.routerService.navigate(['/user/login'], {
               queryParams: {
                 returnUrl: `/poll/view/${this.m_pollId}`,
                 commentPage: this.m_commentPage.toString()
@@ -443,9 +459,9 @@ export class PollViewComponent implements OnInit, OnDestroy {
   /// @fn     removeComment
   /// @brief  Allows a comment's author to remove a comment on a poll.
   ///
-  removeComment (event, id: string) {
+  removeComment(event, id: string) {
     event.preventDefault();
-    
+
     const ays = confirm('This will remove your comment. Are you sure?');
     if (ays === false) { return; }
 
@@ -456,10 +472,10 @@ export class PollViewComponent implements OnInit, OnDestroy {
 
       (error) => {
         const { status, message } = error.error['error'];
-        
+
         if (status === 401) {
           this.flashService.deploy(message, [], FlashType.Error);
-          this.routerService.navigate([ '/user/login' ], {
+          this.routerService.navigate(['/user/login'], {
             queryParams: {
               returnUrl: `/poll/view/${this.m_pollId}`,
               commentPage: this.m_commentPage.toString()
@@ -473,14 +489,14 @@ export class PollViewComponent implements OnInit, OnDestroy {
     );
   }
 
-  previousCommentPage (event) {
+  previousCommentPage(event) {
     event.preventDefault();
     if (this.m_commentPage > 0) {
       this.fetchComments(this.m_commentPage - 1);
     }
   }
 
-  nextCommentPage (event) {
+  nextCommentPage(event) {
     event.preventDefault();
     if (this.m_commentLastPage === false) {
       this.fetchComments(this.m_commentPage + 1);
@@ -488,45 +504,46 @@ export class PollViewComponent implements OnInit, OnDestroy {
   }
 
   // Poll Getters
-  get poll (): Poll { return this.m_pollResult; }
-  get pollFetching (): boolean { return this.m_pollFetching; }
-  get pollError (): string { return this.m_pollError; }
-  get pollGood (): boolean { return this.m_pollFetching === false && this.m_pollError === ''; }
+  get poll(): Poll { return this.m_pollResult; }
+  get pollFetching(): boolean { return this.m_pollFetching; }
+  get pollError(): string { return this.m_pollError; }
+  get pollGood(): boolean { return this.m_pollFetching === false && this.m_pollError === ''; }
 
   // Choice Getters
-  get choiceSelectedId (): string { return this.m_choiceSelectedId; }
-  get choiceInput (): string { return this.m_choiceInput; }
-  get choiceVoting (): boolean { return this.m_choiceVoting; }
-  get choiceAdding (): boolean { return this.m_choiceAdding; }
-  get choiceError (): string { return this.m_choiceError; }
+  get choiceSelectedId(): string { return this.m_choiceSelectedId; }
+  get choiceInput(): string { return this.m_choiceInput; }
+  get choiceVoting(): boolean { return this.m_choiceVoting; }
+  get choiceAdding(): boolean { return this.m_choiceAdding; }
+  get choiceError(): string { return this.m_choiceError; }
 
   // Comment Getters
-  get commentPage (): number { return this.m_commentPage; }
-  get commentLastPage (): boolean { return this.m_commentLastPage; }
-  get commentInput (): string { return this.m_commentInput; }
-  get commentEditInput (): string { return this.m_commentEditInput; }
-  get commentEditId (): string { return this.m_commentEditId; }
-  get commentFetching (): boolean { return this.m_commentFetching; }
-  get commentError (): string { return this.m_commentError; }
-  get commentInputError (): string { return this.m_commentInputError; }
-  get commentResult (): PollComment[] { return this.m_commentResult; }
-  get commentAdding (): boolean { return this.m_commentAdding; }
-  get commentEditing (): boolean { return this.m_commentEditing; }
+  get commentPage(): number { return this.m_commentPage; }
+  get commentLastPage(): boolean { return this.m_commentLastPage; }
+  get commentInput(): string { return this.m_commentInput; }
+  get commentEditInput(): string { return this.m_commentEditInput; }
+  get commentEditId(): string { return this.m_commentEditId; }
+  get commentFetching(): boolean { return this.m_commentFetching; }
+  get commentError(): string { return this.m_commentError; }
+  get commentInputError(): string { return this.m_commentInputError; }
+  get commentResult(): PollComment[] { return this.m_commentResult; }
+  get commentAdding(): boolean { return this.m_commentAdding; }
+  get commentEditing(): boolean { return this.m_commentEditing; }
 
   // Getters to determine if a user is eligible to vote on the poll or add choices.
-  get mustLogIn (): boolean { return this.m_pollResult && this.m_pollResult.requiresLogin && this.tokenService.check() === false; }
-  get pollIsClosed (): boolean { return this.m_pollResult && this.m_pollResult.pollWillClose && this.m_pollResult.closed; }
-  get isPollAuthor (): boolean { return this.m_pollResult && this.m_pollResult.isAuthor; }
-  get hasVoted (): boolean { return this.m_pollResult && this.m_pollResult.hasVoted; }
-  get votedFor (): string { return this.m_pollResult && this.m_pollResult.choiceVotedFor; }
-  get pollRemoved (): boolean { return this.m_pollResult && this.m_pollRemoved; }
-  get cannotVote (): boolean { return this.m_pollResult && this.pollRemoved || this.mustLogIn || this.pollIsClosed || this.isPollAuthor || this.hasVoted; }
-  get cannotAddChoices (): boolean { return this.m_pollResult && this.pollRemoved || this.tokenService.check() === false || this.hasVoted || (!this.m_pollResult.canAddExtraChoices && !this.isPollAuthor); }
+  get mustLogIn(): boolean { return this.m_pollResult && this.m_pollResult.requiresLogin && this.tokenService.check() === false; }
+  get pollIsClosed(): boolean { return this.m_pollResult && this.m_pollResult.pollWillClose && this.m_pollResult.closed; }
+  get isPollAuthor(): boolean { return this.m_pollResult && this.m_pollResult.isAuthor; }
+  get hasVoted(): boolean { return this.m_pollResult && this.m_pollResult.hasVoted; }
+  get votedFor(): string { return this.m_pollResult && this.m_pollResult.choiceVotedFor; }
+  get pollRemoved(): boolean { return this.m_pollResult && this.m_pollRemoved; }
+  get pollEdited(): boolean { return this.m_pollResult && this.m_pollEdited; }
+  get cannotVote(): boolean { return this.m_pollResult && this.pollRemoved || this.m_pollEdited || this.mustLogIn || this.pollIsClosed || this.isPollAuthor || this.hasVoted; }
+  get cannotAddChoices(): boolean { return this.m_pollResult && this.pollRemoved || this.m_pollEdited || this.tokenService.check() === false || this.hasVoted || (!this.m_pollResult.canAddExtraChoices && !this.isPollAuthor); }
 
   // Setters
-  set choiceSelectedId (id: string) { this.m_choiceSelectedId = id; }
-  set choiceInput (input: string) { this.m_choiceInput = input; }
-  set commentInput (input: string) { this.m_commentInput = input; }
-  set commentEditInput (input: string) { this.m_commentEditInput = input; }
+  set choiceSelectedId(id: string) { this.m_choiceSelectedId = id; }
+  set choiceInput(input: string) { this.m_choiceInput = input; }
+  set commentInput(input: string) { this.m_commentInput = input; }
+  set commentEditInput(input: string) { this.m_commentEditInput = input; }
 
 }

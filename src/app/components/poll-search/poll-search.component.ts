@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { Location } from '@angular/common';
 import { Title } from '@angular/platform-browser';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -6,6 +6,7 @@ import { PollService } from '../../services/poll.service';
 import { SocketService } from '../../services/socket.service';
 import { TokenService } from '../../services/token.service';
 import { PollSearchResult } from '../../interfaces/poll';
+import * as moment from 'moment';
 
 @Component({
   selector: 'app-poll-search',
@@ -13,7 +14,7 @@ import { PollSearchResult } from '../../interfaces/poll';
   styles: [],
   encapsulation: ViewEncapsulation.None
 })
-export class PollSearchComponent implements OnInit {
+export class PollSearchComponent implements OnInit, OnDestroy {
 
   private m_method: string = '';
   private m_query: string = '';
@@ -22,6 +23,32 @@ export class PollSearchComponent implements OnInit {
   private m_lastPage: boolean = false;
   private m_error: string = '';
   private m_results: PollSearchResult[] = [];
+
+  private initializeEvents () {
+    this.socketService.on('cast vote', (data) => {
+      for (let result of this.m_results) {
+        if (result.pollId === data['pollId']) {
+          result.voteCount++;
+        }
+      }
+    });
+
+    this.socketService.on('post comment', (data) => {
+      for (let result of this.m_results) {
+        if (result.pollId === data['pollId']) {
+          result.commentCount++;
+        }
+      }
+    });
+    
+    this.socketService.on('remove comment', (data) => {
+      for (let result of this.m_results) {
+        if (result.pollId === data['pollId']) {
+          result.commentCount--;
+        }
+      }
+    });
+  }
 
   private fetchResults (page: number = 0) {
     this.m_error = '';
@@ -32,6 +59,9 @@ export class PollSearchComponent implements OnInit {
     const onResponse = (response) => {
       this.m_results = response['polls'];
       this.m_lastPage = response['lastPage'];
+      for (let result of this.m_results) {
+        result.postDateStr = moment(result.postDate).format('MMMM Do YYYY');
+      }
       this.m_fetching = false;
       this.locationService.replaceState(
         '/poll/search',
@@ -86,8 +116,13 @@ export class PollSearchComponent implements OnInit {
       this.m_query = query ? query : '';
       this.m_page = page;
 
+      this.initializeEvents();
       this.fetchResults(this.m_page);
     });
+  }
+  
+  ngOnDestroy () {
+    this.socketService.clear();
   }
 
   onPreviousClicked () {

@@ -14,7 +14,8 @@
             <a routerLink="/poll/view/{{ poll.pollId }}">{{ poll.issue }}</a>
           </span>
           <span class="label slim left">
-            By: <a routerLink="/user/profile/{{ poll.authorId }}">{{ poll.authorName }}</a>
+            By: <a routerLink="/user/profile/{{ poll.authorId }}">{{ poll.authorName }}</a>,
+            On: {{ poll.postDateStr }}
           </span>
           <span class="label slim right">
             <em>

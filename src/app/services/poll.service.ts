@@ -69,6 +69,8 @@ export class PollService {
     return this.httpService.put(`/api/poll/edit/${pollId}`, {
       issue: options.issue,
       choices: options.choices,
+      removedChoices: options.removedChoices,
+      editedChoices: options.editedChoices,
       keywords: options.keywords,
       requiresLogin: options.requiresLogin,
       canAddExtraChoices: options.canAddExtraChoices,

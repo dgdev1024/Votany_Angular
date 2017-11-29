@@ -4,12 +4,18 @@ export interface PollChoice {
     votes: number
 }
 
+export interface EditedChoice {
+    choiceId: string,
+    body: string
+}
+
 export interface PollComment {
     commentId: string,
     authorId: string,
     authorName: string,
     body: string,
     postDate: Date,
+    postDateStr?: string,
     deleted?: boolean
 }
 
@@ -17,6 +23,7 @@ export interface Poll {
     authorId: string,
     authorName: string,
     postDate: Date,
+    postDateStr?: string,
     issue: string,
     choices: PollChoice[],
     choiceVotedFor: string,
@@ -35,6 +42,8 @@ export interface Poll {
 export interface PollEditorOptions {
     issue: string,
     choices: string[],
+    removedChoices?: string[],
+    editedChoices?: EditedChoice[],
     keywords: string,
     requiresLogin: boolean,
     canAddExtraChoices: boolean,
@@ -48,6 +57,7 @@ export interface PollSearchResult {
     authorId: string,
     authorName: string,
     postDate: Date,
+    postDateStr?: string,
     voteCount: number,
     commentCount: number,
     editCount: number,

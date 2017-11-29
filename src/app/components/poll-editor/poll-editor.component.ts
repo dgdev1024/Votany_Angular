@@ -4,7 +4,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { DatetimeComponent } from '../datetime/datetime.component';
 import { PollService } from '../../services/poll.service';
 import { FlashType, FlashService } from '../../services/flash.service';
-import { PollEditorOptions, Poll } from '../../interfaces/poll';
+import { PollEditorOptions, Poll, EditedChoice } from '../../interfaces/poll';
 
 @Component({
   selector: 'app-poll-editor',
@@ -15,10 +15,15 @@ import { PollEditorOptions, Poll } from '../../interfaces/poll';
 export class PollEditorComponent implements AfterViewInit {
 
   private m_editId: string = '';
+  private m_edited: boolean = false;
   private m_issue: string = '';
   private m_choices: string[] = [];
+  private m_choiceIds: string[] = [];
+  private m_removedChoices: string[] = [];
+  private m_editedChoices: EditedChoice[] = [];
   private m_choiceInput: string = '';
   private m_editIndex: number = -1;
+  private m_editChoiceId: string = '';
   private m_editInput: string = '';
   private m_keywords: string = '';
   private m_login: boolean = false;
@@ -34,6 +39,7 @@ export class PollEditorComponent implements AfterViewInit {
       (response: Poll) => {
         this.m_issue = response.issue;
         this.m_choices = response.choices.map(c => c.body);
+        this.m_choiceIds = response.choices.map(c => c.choiceId);
         this.m_keywords = response.searchKeywords;
         this.m_login = response.requiresLogin;
         this.m_add = response.canAddExtraChoices;
@@ -89,6 +95,8 @@ export class PollEditorComponent implements AfterViewInit {
     this.pollService.editPoll(this.m_editId, {
       issue: this.m_issue,
       choices: this.m_choices,
+      removedChoices: this.m_removedChoices,
+      editedChoices: this.m_editedChoices,
       keywords: this.m_keywords,
       requiresLogin: this.m_login,
       canAddExtraChoices: this.m_add,
@@ -133,6 +141,9 @@ export class PollEditorComponent implements AfterViewInit {
 
       if (editId) {
         this.fetchForEditing();
+      } else {
+        this.recallPollDraft();
+        this.m_edited = true;
       }
     });
   }
@@ -208,6 +219,7 @@ export class PollEditorComponent implements AfterViewInit {
     else {
       this.m_choices.push(this.m_choiceInput);
       this.m_choiceInput = '';
+      this.m_edited = true;
     }
   }
 
@@ -221,6 +233,7 @@ export class PollEditorComponent implements AfterViewInit {
     if (index >= 0 && index < this.m_choices.length) {
       this.m_editIndex = index;
       this.m_editInput = this.m_choices[index];
+      this.m_editChoiceId = this.m_choiceIds[index];
       this.m_choiceError = '';
     }
   }
@@ -242,12 +255,29 @@ export class PollEditorComponent implements AfterViewInit {
         return;
       }
       else {
+        if (this.editingPoll === true) {
+          let editedAlready = false;
+          for (let choice of this.m_editedChoices) {
+            if (choice.choiceId === this.m_editChoiceId) {
+              choice.body = this.m_editInput;
+              editedAlready = true;
+              break;
+            }
+          }
+
+          if (editedAlready === false) {
+            this.m_editedChoices.push({ choiceId: this.m_editChoiceId, body: this.m_editInput });
+          }
+        }
+
         this.m_choices[this.m_editIndex] = this.m_editInput;
         this.m_choiceError = '';
+        this.m_edited = true;
       }
     }
 
     this.m_editIndex = -1;
+    this.m_editChoiceId = '';
   }
 
   ///
@@ -255,9 +285,20 @@ export class PollEditorComponent implements AfterViewInit {
   /// @brief  Removes a choice from the poll draft.
   ///
   removeChoice (event, index: number) {
+    if (this.m_choices.length <= 2) {
+      this.m_choiceError = 'There are not enough choices to do that!';
+      return;
+    }
+
     if (index >= 0 && index <= this.m_choices.length) {
+      if (this.editingPoll === true) {
+        this.m_removedChoices.push(this.m_choiceIds[index]);
+        this.m_choiceIds.splice(index, 1);
+      }
+
       this.m_choices.splice(index, 1);
       this.m_choiceError = '';
+      this.m_edited = true;
     }
   }
 
@@ -271,16 +312,10 @@ export class PollEditorComponent implements AfterViewInit {
     else { this.editPoll(); }
   }
 
-  ///
-  /// @fn     cancelEditing
-  /// @brief  Cancels editing a poll.
-  ///
-  cancelEditing (event) {
-    event.preventDefault();
-  }
-
   // Getters
   get editingPoll (): boolean { return this.m_editId !== ''; }
+  get edited (): boolean { return this.m_edited; }
+  get editId (): string { return this.m_editId; }
   get issue (): string { return this.m_issue; }
   get choices (): string[] { return this.m_choices; }
   get choiceInput (): string { return this.m_choiceInput; }

@@ -44,4 +44,22 @@ a {
     @import "./scss/poll-editor.scss";
     @import "./scss/poll-view.scss";
     @import "./scss/poll-search.scss";
+    @import "./scss/profile.scss";
+    @import "./scss/dashboard.scss";
+
+    .footer {
+        display: block;
+        margin: 12px 0px;
+        text-align: center;
+        font-size: 18px;
+        color: $home-text;
+
+        @media #{$sm-screen} {
+            font-size: 16px;
+        }
+
+        a {
+            color: lightgreen;
+        }
+    }
 }

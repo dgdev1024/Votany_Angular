@@ -174,7 +174,6 @@ module.exports = {
     /// @brief  Fetches a profile of the user with the given ID.
     ///
     /// @param  {string}    id The user ID.
-    /// @param  {number}    page The page of polls.
     /// @param  {function}  done Run when finished.
     ///
     fetchUserProfile (id, done) {
@@ -187,32 +186,17 @@ module.exports = {
                             return next({ status: 404, message: 'User not found.' });
                         }
 
-                        return next(null, user);
+                        return next(null, {
+                            id: user._id.toString(),
+                            name: user.name,
+                            loginMethod: user.loginMethod,
+                            emailAddress: user.emailAddress,
+                            joinDate: user.joinDate
+                        });
                     }).catch((err) => {
                         console.error(`userController.fetchUserProfile (find user) - ${err.stack}`);
                         return next({ status: 500, message: 'Something went wrong while fetching the user profile. Try again later.' });
                     });
-                },
-
-                // Find the user's polls in the database.
-                (user, next) => {
-                    pollModel.find({ authorId: id })
-                        .sort('-postDate')
-                        .skip(20 * page)
-                        .limit(21)
-                        .exec()
-                        .then((polls) => {
-                            return next(null, {
-                                name: user.name,
-                                loginMethod: user.loginMethod,
-                                emailAddress: user.emailAddress,
-                                joinDate: user.joinDate,
-                                polls
-                            });
-                        }).catch((err) => {
-                            console.error(`userController.fetchUserProfile (find polls) - ${err.stack}`);
-                            return next({ status: 500, message: 'Something went wrong while fetching the user profile. Try again later.' });
-                        });
                 }
             ],
             (err, profile) => {
