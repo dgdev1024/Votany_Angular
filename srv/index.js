@@ -46,15 +46,6 @@ module.exports = () => {
     // Socket.IO
     const server = http.createServer(app);
     const io = socketIo(server);
-    
-    // Some custom middleware to force HTTPS if we are on Heroku.
-    // SOURCE: https://stackoverflow.com/a/31144924/2868302
-    app.use((req, res, next) => {
-        if (!req.protocol !== 'https' && process.env.NODE_ENV !== "development") {
-            return res.redirect(process.env.SITE_URL + req.url);
-        }
-        next();
-    });
 
     // API Routing
     app.use('/api/user', require('./routes/auth')(io));
