@@ -99,14 +99,14 @@
 
   <div *ngIf="pollGood" class="vot-poll-view-col right">
     <div class="vot-poll-view-card">
-      <span class="heading">Poll Comments</span>
+      <span class="heading"><i class="fa fa-comments"></i> Poll Comments</span>
       <div *ngIf="commentFetching === false || commentResult.length > 0; else votFetchingComments">
         <div *ngIf="commentError === ''; else votCommentError">
           <div *ngIf="tokenService.check() === true">
             <span *ngIf="commentInputError !== ''" class="label center error">{{ commentInputError }}</span>
             <textarea name="commentInput" [(ngModel)]="commentInput" placeholder="Enter a comment..." maxlength="280"></textarea>
             <button [disabled]="commentInput.length === 0 || commentInput.length > 280" (click)="postComment($event)" class="confirm block">
-              <i class="fa fa-plus"></i> Post Comment ({{ commentInput.length }} / 280)
+              <i class="fa fa-comment"></i> Post Comment ({{ commentInput.length }} / 280)
             </button>
           </div>
           <div *ngIf="commentResult.length > 0; else votNoComments">

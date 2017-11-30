@@ -16,6 +16,24 @@
         </span>
         <span class="label center slim">Join Date: {{ user.joinDateStr }}</span>
       </div>
+      <div *ngIf="tokenService.check() === true && tokenService.get().id === userId" class="vot-profile-pane">
+        <span class="heading center">Account Settings</span>
+        <span class="label center slim">
+          <a routerLink="/poll/editor">
+            <i class="fa fa-pencil"></i> Create a Poll
+          </a>
+        </span>
+        <span class="label center slim">
+          <a routerLink="/user/issuePasswordToken">
+            <i class="fa fa-key"></i> Change Your Password
+          </a>
+        </span>
+        <span class="label center slim">
+          <a routerLink="/user/logout">
+            <i class="fa fa-sign-out"></i> Log Out
+          </a>
+        </span>
+      </div>
       <div class="vot-profile-pane">
         <span class="heading center">Polls By This User</span>
         <div *ngIf="pollFetching === false; else votFetchPolls">
