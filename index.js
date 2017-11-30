@@ -21,6 +21,6 @@ mongoose.connect(process.env.DATABASE_URL, { useMongoClient: true })
     .then(require('./srv'))
     .catch((err) => {
         // Report error, close database, and exit.
-        console.error(`[EXCEPTION!] ${err}`);
+        console.error(`[EXCEPTION!] ${err.stack ? err.stack : err}`);
         mongoose.connection.close().then(() => process.exit(1));
     });

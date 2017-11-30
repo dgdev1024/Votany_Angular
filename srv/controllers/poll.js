@@ -267,8 +267,8 @@ module.exports = {
             // Populate the author IDs of the poll's comments with the authors' details.
             commentModel.populate(poll.comments, { path: 'authorId' }).then((comments) => {
                 // Get the start-to-end range of the comments to be returned.
-                const start = 0 + (20 * page);
-                const end = start + 20 + 1;
+                const start = 0 + (10 * page);
+                const end = start + 10 + 1;
 
                 // Slice our comments per page, sort by post date, and map them for return.
                 const sliced = poll.comments.sort((a, b) => {
@@ -285,8 +285,8 @@ module.exports = {
 
                 // Return our comments.
                 return done(null, {
-                    comments: sliced.slice(0, 20),
-                    lastPage: sliced.length < 21
+                    comments: sliced.slice(0, 10),
+                    lastPage: sliced.length < 11
                 });
             }).catch((err) => {
                 console.error(`pollController.fetchPollComments (populate comment author IDs) - ${err.stack}`);

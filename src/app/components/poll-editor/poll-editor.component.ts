@@ -334,9 +334,9 @@ export class PollEditorComponent implements AfterViewInit {
   set choiceInput (input: string) { this.m_choiceInput = input; }
   set choiceEditInput (input: string) { this.m_editInput = input; }
   set choiceEditIndex (index: number) { this.m_editIndex = index; }
-  set keywords (keywords: string) { this.m_keywords = keywords; }
-  set requiresLogin (login: boolean) { this.m_login = login; }
-  set canAddExtraChoices (add: boolean) { this.m_add = add; }
-  set pollWillClose (close: boolean) { this.m_close = close; }
+  set keywords (keywords: string) { this.m_keywords = keywords; this.m_edited = true; }
+  set requiresLogin (login: boolean) { this.m_login = login; this.m_edited = true; }
+  set canAddExtraChoices (add: boolean) { this.m_add = add; this.m_edited = true; }
+  set pollWillClose (close: boolean) { this.m_close = close; this.m_edited = true; }
 
 }

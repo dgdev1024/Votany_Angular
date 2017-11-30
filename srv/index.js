@@ -8,6 +8,8 @@ const http          = require('http');
 const path          = require('path');
 const express       = require('express');
 const session       = require('express-session');
+const mongoose      = require('mongoose');
+const connectMongo  = require('connect-mongo')(session);
 const bodyParser    = require('body-parser');
 const helmet        = require('helmet');
 const cors          = require('cors');
@@ -33,13 +35,26 @@ module.exports = () => {
     app.use(session({
         secret: process.env.SESSION_SECRET,
         resave: false,
-        saveUninitialized: false
+        saveUninitialized: false,
+        store: new connectMongo({
+            mongooseConnection: mongoose.connection,
+            ttl: 24 * 60 * 60
+        })
     }));
     app.use(passport.initialize());
 
     // Socket.IO
     const server = http.createServer(app);
     const io = socketIo(server);
+    
+    // Some custom middleware to force HTTPS if we are on Heroku.
+    // SOURCE: https://stackoverflow.com/a/31144924/2868302
+    app.use((req, res, next) => {
+        if (!req.protocol !== 'https' && process.env.NODE_ENV !== "development") {
+            return res.redirect(process.env.SITE_URL + req.url);
+        }
+        next();
+    });
 
     // API Routing
     app.use('/api/user', require('./routes/auth')(io));

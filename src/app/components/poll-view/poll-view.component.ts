@@ -107,7 +107,7 @@ export class PollViewComponent implements OnInit, OnDestroy {
             deleted: false
           });
 
-          if (this.m_commentResult.length > 20) {
+          if (this.m_commentResult.length > 10) {
             this.m_commentResult.pop();
             this.m_commentLastPage = false;
           }
