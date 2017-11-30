@@ -99,6 +99,14 @@
 
   <div *ngIf="pollGood" class="vot-poll-view-col right">
     <div class="vot-poll-view-card">
+      <a href="https://twitter.com/intent/tweet?hashtags=Votany&text={{ poll.issue }}&url={{ poll.pollUrl }}" target="_blank" class="vot-link-button twitter block">
+        <i class="fa fa-twitter"></i> Share on Twitter.
+      </a>
+      <a href="https://www.facebook.com/dialog/share?app_id=1592326364165970&display=popup&quote={{ poll.issue }}&href={{ poll.pollUrl }}&redirect_uri={{ poll.pollUrl }}" class="vot-link-button facebook block">
+        <i class="fa fa-facebook"></i> Share on Facebook.
+      </a>
+    </div>
+    <div class="vot-poll-view-card">
       <span class="heading"><i class="fa fa-comments"></i> Poll Comments</span>
       <div *ngIf="commentFetching === false || commentResult.length > 0; else votFetchingComments">
         <div *ngIf="commentError === ''; else votCommentError">

@@ -114,10 +114,11 @@
                 }
             }
             
-            button {
+            button, a.vot-link-button {
                 display: inline-block;
                 margin: 4px 4px 4px 0px;
                 padding: 8px;
+                box-sizing: border-box;
                 font-size: 18px;
                 background-color: rgba(0, 0, 0, 0.8);
                 color: white;
@@ -167,6 +168,22 @@
                     }
                 }
                 
+                &.facebook {
+                    background-color: rgba(59, 89, 152, 1.0);
+    
+                    &:hover {
+                        background-color: rgba(59, 89, 152, 0.7);
+                    }
+                }
+                
+                &.twitter {
+                    background-color: rgba(0, 172, 237, 1.0);
+    
+                    &:hover {
+                        background-color: rgba(0, 172, 237, 0.5);
+                    }
+                }
+                
                 &:disabled {
                     background-color: rgba(0, 0, 0, 0.3);
                     color: gray;
@@ -175,6 +192,19 @@
                         background-color: rgba(0, 0, 0, 0.3);
                         cursor: default;
                     }
+                }
+            }
+
+            a.vot-link-button {
+                text-align: center;
+                font-size: 18px;
+
+                &:hover {
+                    text-decoration: none;
+                }
+
+                @media #{$sm-screen} {
+                    font-size: 16px;
                 }
             }
             

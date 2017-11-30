@@ -20,6 +20,7 @@ export interface PollComment {
 }
 
 export interface Poll {
+    pollUrl: string,
     authorId: string,
     authorName: string,
     postDate: Date,

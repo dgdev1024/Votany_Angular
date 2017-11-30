@@ -223,6 +223,7 @@ module.exports = {
             const choiceVotedFor = poll.votedFor(voterId);
 
             return done(null, {
+                pollUrl: `${process.env.SITE_URL}/poll/view/${pollId}`,
                 authorId: poll.authorId._id,
                 authorName: poll.authorId.name,
                 postDate: poll.postDate,
