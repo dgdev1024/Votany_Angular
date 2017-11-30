@@ -23,7 +23,7 @@
             <i class="fa fa-pencil"></i> Create a Poll
           </a>
         </span>
-        <span class="label center slim">
+        <span *ngIf="user.loginMethod === 'local'" class="label center slim">
           <a routerLink="/user/issuePasswordToken">
             <i class="fa fa-key"></i> Change Your Password
           </a>
