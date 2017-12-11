@@ -55,6 +55,7 @@ export class PollSearchComponent implements OnInit, OnDestroy {
     this.m_page = page;
     this.m_fetching = true;
     this.m_method = this.m_method ? this.m_method : 'recent';
+    this.m_results = [];
 
     const onResponse = (response) => {
       this.m_results = response['polls'];
