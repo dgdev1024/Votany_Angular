@@ -1,5 +1,5 @@
 <div class="vot-search">
-  <div *ngIf="fetching === false || results.length > 0; else votFetchingResults">
+  <div *ngIf="fetching === false; else votFetchingResults">
     <div *ngIf="error === ''; else votFetchError">
       <span class="heading center">Search Results</span>
       <span class="label center">
