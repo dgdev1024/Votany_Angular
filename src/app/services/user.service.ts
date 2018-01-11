@@ -5,11 +5,12 @@
 
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { TokenService } from './token.service';
 
 @Injectable()
 export class UserService {
 
-  constructor(private httpService: HttpClient) { }
+  constructor(private httpService: HttpClient, private tokenService: TokenService) { }
 
   registerLocal (
     firstName: string,
@@ -53,6 +54,10 @@ export class UserService {
 
   fetchUserProfile (userId: string) {
     return this.httpService.get(`/api/user/profile/${userId}`);
+  }
+
+  deleteUser (userId: string) {
+    return this.httpService.delete('/api/user/delete', this.tokenService.bearer());
   }
 
 }

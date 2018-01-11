@@ -11,9 +11,6 @@
       <div class="vot-profile-pane">
         <span class="heading center">Account Details</span>
         <span class="label center slim">Name: {{ user.name }}</span>
-        <span *ngIf="user.loginMethod === 'local'" class="label center slim">
-          Email Address: {{ user.emailAddress }}
-        </span>
         <span class="label center slim">Join Date: {{ user.joinDateStr }}</span>
       </div>
       <div *ngIf="tokenService.check() === true && tokenService.get().id === userId" class="vot-profile-pane">
@@ -32,6 +29,12 @@
           <a routerLink="/user/logout">
             <i class="fa fa-sign-out"></i> Log Out
           </a>
+        </span>
+        <span class="label center slim">
+          <a href="#" (click)="deleteUser($event)">
+            <i class="fa fa-trash"></i> Delete Account
+          </a><br />
+          <em>WARNING: This cannot be undone!</em>
         </span>
       </div>
       <div class="vot-profile-pane">

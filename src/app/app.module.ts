@@ -30,12 +30,17 @@ import { PollViewComponent } from './components/poll-view/poll-view.component';
 import { PollSearchComponent } from './components/poll-search/poll-search.component';
 import { ProfileComponent } from './components/profile/profile.component';
 import { VoteChartComponent } from './components/vote-chart/vote-chart.component';
+import { DataUsageComponent } from './components/data-usage/data-usage.component';
 
 const routes: Routes = [
   {
     path: '',
     pathMatch: 'full',
     component: HomeComponent
+  },
+  {
+    path: '/datausage',
+    component: DataUsageComponent
   },
   {
     path: 'user/register',
@@ -111,7 +116,8 @@ const routes: Routes = [
     PollViewComponent,
     PollSearchComponent,
     ProfileComponent,
-    VoteChartComponent
+    VoteChartComponent,
+    DataUsageComponent
   ],
   imports: [
     BrowserModule,

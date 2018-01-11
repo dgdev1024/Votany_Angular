@@ -1,6 +1,6 @@
 <div class="vot-form">
   <span class="vot-form-heading">Register a New Account</span>
-  <span class="vot-form-notice">Please read the instructions below before registering.</span>
+  <span class="vot-form-notice">Please read the <a routerLink="/datausage">Data Usage FAQ</a>, and the instructions below before registering.</span>
   <div class="vot-form-element">
     <button class="twitter" (click)="socialService.socialSignin($event, 'twitter')">
       <i class="fa fa-twitter"></i> Sign In with Twitter
@@ -67,6 +67,7 @@
   </form>
   <span class="vot-form-heading">Instructions</span>
   <ul class="vot-form-information">
+    <li>Before you register, please consult the <a routerLink="/datausage">Data Usage FAQ</a>.</li>
     <li>For local registration, all fields are required.</li>
     <li>First and last names should contain only letters.</li>
     <li>Email addresses must be in the form 'example@test.com'.</li>

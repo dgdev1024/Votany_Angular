@@ -5,6 +5,7 @@
 
 // Imports
 const waterfall     = require('async').waterfall;
+const forEachOf     = require('async').forEachOf;
 const userModel     = require('../models/user');
 const pollModel     = require('../models/poll').pollModel;
 const validate      = require('../utility/validate');
@@ -190,7 +191,6 @@ module.exports = {
                             id: user._id.toString(),
                             name: user.name,
                             loginMethod: user.loginMethod,
-                            emailAddress: user.emailAddress,
                             joinDate: user.joinDate
                         });
                     }).catch((err) => {
@@ -204,5 +204,69 @@ module.exports = {
                 return done(null, profile);
             }
         );
+    },
+
+    ///
+    /// @fn     deleteUser
+    /// @brief  Deletes a user from the site.
+    ///
+    /// @param  {string} id     The ID of the user to be removed.
+    /// @param  {function} done Run when finished.
+    ///
+    deleteUser (id, done) {
+        waterfall([
+            // First, find and remove all polls authored by this account.
+            (next) => {
+                pollModel.remove({ authorId: id })
+                    .then(() => {
+                        return next(null);
+                    })
+                    .catch((err) => {
+                        console.error(`userController.deleteUser (delete polls) - ${err.stack}`);
+                        return next({ status: 500, message: 'Something went wrong while deleting your account. Try again later.' });
+                    })
+            },
+
+            // Next, find and remove all comments authored by this account.
+            (next) => {
+                pollModel.find({}).then((polls) => {
+                    forEachOf(polls, (val, key, fornext) => {
+                        if (val.comments.length === 0) {
+                            return fornext();
+                        }
+
+                        val.comments = val.comments.filter((comment) => {
+                            return comment.authorId !== id;
+                        });
+
+                        val.save().then(() => { 
+                            return fornext(); 
+                        }).catch((err) => {
+                            console.warn(`userController.deleteUser (delete comment) - ${err.stack}`);
+                            return fornext();
+                        });
+                    }, (err) => {
+                        if (err) { return next(err); }
+                        return next(null);
+                    });
+                }).catch((err) => {
+                    console.error(`userController.deleteUser (delete comments) - ${err.stack}`);
+                    return next({ status: 500, message: 'Something went wrong while deleting your account. Try again later.' });
+                });
+            },
+
+            // Now remove this account from the database.
+            (next) => {
+                userModel.findByIdAndRemove(id).then(() => {
+                    return next(null);
+                }).catch((err) => {
+                    console.error(`userController.deleteUser (delete account) - ${err.stack}`);
+                    return next({ status: 500, message: 'Something went wrong while deleting your account. Try again later.' });
+                });
+            }
+        ], (err) => {
+            if (err) { return done(err); }
+            return done(null, { message: 'Your account has been deleted.' });
+        })
     }
 };

@@ -1,11 +1,12 @@
 import { Component, OnInit, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { Location } from '@angular/common';
 import { Title } from '@angular/platform-browser';
-import { ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { UserService } from '../../services/user.service';
 import { PollService } from '../../services/poll.service';
 import { TokenService } from '../../services/token.service';
 import { SocketService } from '../../services/socket.service';
+import { FlashService, FlashType } from '../../services/flash.service';
 import { User } from '../../interfaces/user';
 import { PollSearchResult } from '../../interfaces/poll';
 import * as moment from 'moment';
@@ -105,13 +106,15 @@ export class ProfileComponent implements OnInit {
   }
 
   constructor(
+    private routerService: Router,
     private activatedRoute: ActivatedRoute,
     private locationService: Location,
     private titleService: Title,
     private userService: UserService,
     private pollService: PollService,
     public tokenService: TokenService,
-    private socketService: SocketService
+    private socketService: SocketService,
+    public flashService: FlashService
   ) { }
 
   ngOnInit() {
@@ -135,6 +138,28 @@ export class ProfileComponent implements OnInit {
 
   onNextClicked () {
     if (this.m_pollLastPage === false) { this.fetchPolls(this.m_pollPage + 1); }
+  }
+
+  deleteUser (ev) {
+    ev.preventDefault();
+    const aysOne = confirm('Are you sure you want to delete your Votany account?');
+    if (aysOne === false) { return; }
+
+    const aysTwo = confirm('This will delete ALL of your polls and comments! Are you ABSOLUTELY sure?');
+    if (aysTwo === false) { return; }
+
+    this.userService.deleteUser(this.m_userId).subscribe(
+      (response) => {
+        this.tokenService.clear();
+        this.flashService.deploy('Your account has been deleted.', [], FlashType.OK);
+        this.routerService.navigate([ '/' ], { replaceUrl: true });
+      },
+
+      (error) => {
+        const { message } = error.error['error'];
+        this.flashService.deploy(message, [], FlashType.Error);
+      }
+    );
   }
 
   // Getters
