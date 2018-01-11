@@ -155,7 +155,7 @@ module.exports = (io) => {
 
     // DELETE: Deletes a user account.
     router.delete('/delete', auth.checkJwt, (req, res) => {
-        authentication.testLogin(req, (err, user) => {
+        auth.testLogin(req, (err, user) => {
             if (err) { return res.status(err.status).json({ error: err }); }
             userController.deleteUser(user.id, (err, ok) => {
                 if (err) { return res.status(err.status).json({ error: err }); }
