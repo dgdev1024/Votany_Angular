@@ -39,7 +39,7 @@ const routes: Routes = [
     component: HomeComponent
   },
   {
-    path: '/datausage',
+    path: 'datausage',
     component: DataUsageComponent
   },
   {
